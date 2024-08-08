@@ -21,7 +21,7 @@ def generated_index():
             linktext += remove_non_alphanumeric_keep_spaces(file.readline())
         
         bullet_template = f"""<li><a href="{link}">{linktext}</a></li>"""
-        if file_name != "index.html": 
+        if file_name != "index.md": 
             bullets += bullet_template
                 
     list_template = f"""
