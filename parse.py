@@ -5,6 +5,37 @@ parent_directory = "markdown/"
 list_of_file_names = os.listdir(parent_directory)
 print(list_of_file_names)
 
+
+def generated_index(): 
+    thing_to_append_to_content = ""
+
+    bullets = ""
+
+    for file_name in list_of_file_names: 
+        file_path = f'{parent_directory}{file_name}'
+
+        link = file_name[:-3] + ".html"
+        linktext = ""
+
+        with open(file_path) as file: 
+            linktext += remove_non_alphanumeric_keep_spaces(file.readline())
+        
+        bullet_template = f"""<li><a href="{link}">{linktext}</a></li>"""
+        if file_name != "index.html": 
+            bullets += bullet_template
+                
+    list_template = f"""
+        <ul>
+            {bullets}
+        </ul>
+        """
+
+    return list_template
+
+def remove_non_alphanumeric_keep_spaces(string):
+    return ''.join(char for char in string if char.isalnum() or char.isspace())
+
+
 for file_name in list_of_file_names: 
     file_path = f'{parent_directory}{file_name}'
     content = ""
@@ -17,6 +48,9 @@ for file_name in list_of_file_names:
 
     with open(file_name[:-3] + ".html", "w") as file: # opens a new html file with the filename
         print(content)
+        if file_name == "index.md": 
+            content += generated_index()
+
         completed_template = f"""
         <!DOCTYPE html>
         <html lang="en">
@@ -32,5 +66,6 @@ for file_name in list_of_file_names:
             </div>
         </body>
         </html>
-        """
+        """            
+
         file.write(completed_template)
