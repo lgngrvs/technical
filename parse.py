@@ -33,7 +33,7 @@ def generated_index():
     return list_template
 
 def remove_non_alphanumeric_keep_spaces(string):
-    return ''.join(char for char in string if char.isalnum() or char.isspace())
+    return ''.join(char for char in string if char.isalnum() or char.isspace() or char=="-")
 
 
 for file_name in list_of_file_names: 
@@ -64,6 +64,8 @@ for file_name in list_of_file_names:
             <div id="wrapper">
                 {content}
             </div>
+            <script type="text/javascript" src="mathjax.js"></script>
+            <script type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
         </body>
         </html>
         """            
