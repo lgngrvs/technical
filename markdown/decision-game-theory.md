@@ -27,27 +27,66 @@ If you want to formalize reasoning and decision-making, make your own decision t
 
 Sources: 
 - [Introduction to Logical Decision Theory](https://arbital.com/p/logical_dt/?l=5gc)
+- [Evidential Decision Theory - Wikipedia](https://en.wikipedia.org/wiki/Evidential_decision_theory)
+- [An explanation of decision theories](https://www.lesswrong.com/posts/RiYhceiQy4w8JQAsn/an-explanation-of-decision-theories)
 
 The typical conventional reasoning we might use about the world is what we'd describe as **Causal Decision Theory**, or CDT. CDT evaluates decisions for an agent that is distinct from its environment at a specific point in time (i.e. the theory doesn't consider itself "part of the world," which is important if you start doing weird things like blackmail and acausal trades), making decisions based on its predictions about how well things will turn out. 
 
-In other words, you hold everything else constant, and look at the agen'ts decision in isolation; you look at the world in which the agent makes decision A as opposed to decision B, you compare the outcomes, and decide based on which one looks better -- which one has higher *expected utility*.
+In other words, you hold everything else constant, and look at the agent's decision in isolation; you look at the world in which the agent makes decision A as opposed to decision B, you compare the outcomes, and decide based on which one looks better -- which one has higher *expected utility*.
 
 It's really not that deep. Literally, "look at the causal consequences of your actions and decide which consequences you like better."
 
 But there are outcomes where this formal theory doesn't match our intuitions.[^1] The typical example is that an economist can argue that, based on CDT, that it's pointless for any given individual to vote; it's impossibly unlikely that a democratic election with tens of thousands of voters will be swung by *your vote* in particular, nevermind one with millions of votes. It's so unlikely that it's not worth it to even vote in the first place -- the wasted time is a net negative in expectation.
 
-You'd use an expected utility function: $$\mathbb{E}(a_{x}) = \sum_{o \in \mathcal{O}} \mathbb{U}(o_{i}) * P(o_{i}|a_{x})$$
+I don't really like this. I like voting in elections. I'd like a formalization of rationality that says you should vote in elections, since my imagination of a "perfectly rational society" filled with rational agents where everyone follows perfect systematic rationality (which is what we're trying to create here, presumably) is *not* one in which no one votes in elections.
+
+The rest of decision theory is weirder and different in order to try and account for this. We can group all these decision theories under the name **Logical decision theories**. I'll start with the original competitor (I guess), which is **Evidential decision theory.**
+### Evidential Decision Theory
+To this point, I've been basically going for introduction and haven't done much formalization — which is funny considering the whole point of decision theories is to allow formalization of decision making.
+
+The reason that I did that is because I wanted to get you started with intuitions that CDT is "the default." If I showed you the formalization first, it would distract from that point.
+
+But now we need the formalizations in order to proceed with intuition-building — at least, I do, lol. Why? EDT is a very natural way of thinking about decision-making, but that's only visible in its formalization. Attempts at intuition-building definitions of EDT kind of suck, just due to its nature. For example: 
+
+> For a while, there were two dominant decision theories, causal decision theory (CDT), and evidential decision theory (EDT):
+> 
+> - Causal decision theory: Take actions that physically cause you to get higher expected utility.
+> - Evidential decision theory: Take actions that would be evidence of you getting higher expected utility.
+
+(from [LessWrong](https://www.lesswrong.com/posts/RiYhceiQy4w8JQAsn/an-explanation-of-decision-theories), also linked above in sources)
+
+Causal decision theory makes sense to me — you just do things that cause outcomes you like better — but it doesn't really click for me why doing things that "would be evidence of you getting higher expected utility" makes sense or is different.
+
+Here is [Wikipedia's version](https://en.wikipedia.org/wiki/Evidential_decision_theory): 
+
+> when a rational agent is confronted with a set of possible actions, one should select the action with the highest _news value_, that is, the action which would be indicative of the best outcome in expectation if one received the "news" that it had been taken. In other words, it recommends to "do what you most want to learn that you will do."
+
+This didn't help much for me; seeing the formalization further down in the article did get rid of the confusion for me, and hopefully it will for you. 
+
+Here's how you formalize CDT. You calculate the *counterfactual* expected utility:
+
+$$\mathbb{E}_{CDT}(a) = \sum_{o \in \mathcal{O}} \mathbb{U}(o_{i})*P(a \space\Box \rightarrow o_{i})$$
+Where
+
+- $\mathbb{E}_{CDT}(a)$ is the expected utility of an action $a$ under CDT
+- $\mathbb{U}(o_{i})$ is the utility (i.e. desirability) of the outcome ${o_i}$
+- $P(a \space \Box → o_{i})$ is the probability that action $a$ *causes* outcome $o_{i}$ in some counterfactual world where $a$ is taken
+
+For EDT, you just use a simple expected utility function:
+
+$$\mathbb{E}_{EDT}(a) = \sum_{o \in \mathcal{O}} \mathbb{U}(o_{i}) * P(o_{i}|a)$$
 
 Where
 
-- $\mathbb{E}(a_{x})$ is the expected utility of an action ${a_x}$
+- $\mathbb{E}_{EDT}(a_{x})$ is the expected utility of an action ${a_x}$
 - $\mathbb{U}(o_{i})$ is the utility of the outcome ${o_i}$
-- $P(o_{i}|a_{x})$ is the probability of the outcome $o_i$ if the action $a_x$ is taken.
+- $P(o_{i}|a)$ is your probability of the outcome $o_i$ if the action $a$ is taken.
 
+With CDT, your actions must *cause* $o_i$. With EDT, your action acts as Bayesian evidence that outcome $o_i$ is more likely to have occurred. The latter is focused on, simply, *how your beliefs update* in response to an action — it doesn't matter the causal relationship of your action to the outcome, only how it causes you to update your beliefs.
 
-I don't really like this. I like voting in elections. I'd like a formalization of rationality that says you should vote in elections, since my imagination of a "perfectly rational society" filled with rational agents where everyone follows perfect systematic rationality (which is what we're trying to create here, presumably) is *not* one in which no one votes in elections.
+If you're not familiar with the ideas of predictive processing, or just Bayesian statistics in general,  this might be a weird-feeling frame to you and it might not click. If that's the case, those are the two things you should try to go understand I guess — Bayes' theorem, and an intuition for how formal probabilistic models of the human mind treat belief updating and such. (maybe this is a topic for some future notes or something.) 
 
-The rest of decision theory is weirder and different in order to try and account for this. We can group all these decision theories under the name **Logical decision theories**.
+Anyway, some thought experiments will likely help the intuition. The classic one is Newcomb's paradox. 
 
 . . .
 
