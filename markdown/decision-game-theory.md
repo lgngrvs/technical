@@ -245,6 +245,9 @@ If we want to do better than Defect-Defect in the classic prisoner's dilemma -- 
 *This section is in progress.*
 
 from [Parametric Bounded Lob's Theorem and Robust Cooperation of Bounded Agents](http://arxiv.org/abs/1602.04184)
+earlier work: https://www.lesswrong.com/posts/iQWk5jYeDg5ACCmpx/robust-cooperation-in-the-prisoner-s-dilemma
+also see readwise
+
 
 - We can have a version of the prisoner's dilemma, but instead of two people playing it, it's two computers playing it, and they each get access to each other's source code -- i.e. they can perfectly simulate one another. (I think, maybe there's some weird edge case here)
 - Fun note: if you have a formally-defined program, it can be rewritten in math or something. Since the computer program is deterministic, we can use proofs to determine the outcome of our bot. Specifically: 
