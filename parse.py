@@ -3,7 +3,7 @@ import os
 
 parent_directory = "markdown/"
 list_of_file_names = os.listdir(parent_directory)
-print(list_of_file_names)
+# print(list_of_file_names)
 
 
 def generated_index(): 
@@ -44,7 +44,7 @@ for file_name in list_of_file_names:
         file_text = file.read()
         content = markdown(file_text, extensions=["tables", "footnotes"])
     
-    print(content)
+    # print(content)
 
     with open(file_name[:-3] + ".html", "w") as file: # opens a new html file with the filename
         print(content)
