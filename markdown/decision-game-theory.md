@@ -220,20 +220,25 @@ So here, EDT wins against CDT. Yay! Does that mean EDT is strictly better than C
 
 I said earlier that CDT is focused on causal influence. I want to revisit and clarify that intuition. Another way to look at this is that CDT sees an agent's actions as *independent* from other actions taken simultaneously in the agent's environment — meaning it has trouble taking into account other agents' simulations of itself. An agent that is known to be a causal decision theorist will have trouble engaging with the idea that the other agents are making predictions knowing the calculations that CDT does.
 
+**TODO**
 
-
-(note about decision theory vs. predicting based on brain. plausibly this can actually work IRL? but then the reality-based simulation isn't that helpful)
-
-
-TODO
 - [x] Add the Claude outputs
 - [x] Escape the claude outputs
 - [x] Update the situation explanation according to Nozick's definition?
 - [ ] understand the notion of counterfactual probability 
 - [ ] add other decision theories
+	- [ ] timeless decision theory
 - [ ] connect decision theory to ethics
+- [ ] timeless and updateless decision theory
+
+- [ ] Reflexive stability: if you write a successor agent, does your decision theory tell you to implement itself, or does it allow you to self-modify
+- [ ] supermoral ai — moral reality check
+	- [ ] fun theory
+	- [ ] metaethics and such
+- [ ] LDTs are weakly convergent
 
 
+(note about decision theory vs. predicting based on brain. plausibly this can actually work IRL? but then the reality-based simulation isn't that helpful)
 . . .
 
 If we want to do better than Defect-Defect in the classic prisoner's dilemma -- where you're in two different rooms, you'll need *acausal trades*. Maybe. Maybe there are other ways to do this or something that aren't absurd, but this one's kind of interesting and fun.
@@ -247,6 +252,7 @@ If we want to do better than Defect-Defect in the classic prisoner's dilemma -- 
 from [Parametric Bounded Lob's Theorem and Robust Cooperation of Bounded Agents](http://arxiv.org/abs/1602.04184)
 earlier work: https://www.lesswrong.com/posts/iQWk5jYeDg5ACCmpx/robust-cooperation-in-the-prisoner-s-dilemma
 also see readwise
+https://www.lesswrong.com/posts/XkNXsi6bsxxFaL5FL/ai-cooperation-is-already-studied-in-academia-as-program
 
 
 - We can have a version of the prisoner's dilemma, but instead of two people playing it, it's two computers playing it, and they each get access to each other's source code -- i.e. they can perfectly simulate one another. (I think, maybe there's some weird edge case here)
