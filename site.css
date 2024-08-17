@@ -17,3 +17,19 @@ blockquote {
 	padding-left: 20px;
 	border-left: 2px solid lightgray;
 } 
+
+img {
+	max-width: 75%;
+	display: block;
+	margin: 1em auto;
+}
+
+table, th, td {
+  border: 1px solid;
+  border-collapse: collapse;
+  padding: 1ch;
+}
+
+table {
+margin: auto; 
+}
