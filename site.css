@@ -33,3 +33,16 @@ table, th, td {
 table {
 margin: auto; 
 }
+
+code {
+  background-color: #f6f6f6;
+	border-radius: 0.25em;
+
+}
+
+pre {
+	background-color: #f6f6f6;
+	border-radius: 0.25em;
+	padding: 1ch;
+	
+}

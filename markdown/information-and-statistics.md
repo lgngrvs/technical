@@ -11,7 +11,7 @@ You come to a fork in the road and you have no ideas about which way might be th
 
 What if you do have some information preceding this, though? What if you have 70% confidence that path $A$ is correct, since someone earlier on the road who seemed somewhat trustworthy told you it was? They wouldn't be giving you still 1 bit of information, because you'd be updating less — you're less surprised. You already thought this was the case, they're just upgrading your confidence. No longer can we work with simple integers of bits; we realize from this that the amount of information you get is directly related to how much knowledge you already have — or don't have.
 
-The intuition here is that **the *amount* of information you're getting is related to *how surprised you are* to receive it.*** 
+The intuition here is that **the *amount* of information you're getting is related to *how surprised you are* to receive it.** 
 
 In a formal sense, surprisal quantifies *how wrong your predictions were.* (At least, this is one way to think about it — a starter intuition, if you will.) When an event you didn't expect occurs — i.e. it surprises you — that surprise tells you that your model of the world was wrong or incomplete, insofar as you didn't predict the event with 99.99% confidence. Hence, you most likely have to update your internal model of the world such that it would predict that outcome with higher confidence. Surprise tells you that you're receiving information about the world, about how your model was wrong.
 
@@ -23,9 +23,11 @@ I'll talk about how to measure error and surprise soon, but for now I want to fi
 I'll start with two ways that you might naturally think about information as a mathematical object, and why those ways lead you to computational problems.
 
 **Scenario 2.1**
+
 From the 70%/30% situation above, you might think that the person on the path would be giving you 0.3 bits of information, thus making up for the difference in the outcomes. (This would be incorrectly applying intuitions that "probabilities should sum to 1.") If you think about this more deeply, though, the math doesn't work out; distinguishing between two perfectly uncertain options — events that have priors of 0.5 each — would only give you 0.5 bits of information, as opposed to the 1 bit we would expect. Shouldn't someone revealing to you a bit — a zero or a one, a binary choice — give you one bit of information, if you have literally no idea what that bit might be?
 
 **Scenario 2.2**
+
 Here's another way that "adding to 1" doesn't work out nicely: if you have two fair coins and you flip them both separately, each coin flip would theoretically give you 0.5 bits of information. However, if you looked at it from the perspective of their joint probability distribution — for example, $P(\text{2 heads}) = 0.5 \* 0.5 =  0.25$ — we would get 0.75 bits of information instead. This just straightforwardly doesn't work out. Two independent events should not give different amounts information just based on whether you look at their probabilities together or separately — but we just saw that happen! We have to keep looking.
 
 Okay, so information for an event $x$ can't just be $1-P(x)$. What else could it be?
@@ -35,6 +37,7 @@ If we think about it, the information we get is quantifying *how wrong we are.* 
 That's *almost* right, but we're still missing something. 
 
 **Scenario 3.1**
+
 To see what's wrong let's imagine two fair dice. The probability of rolling a one on die $A$ is $1/6$; for $B$ it's also $1/6$. If we use $1/P(x)$, and look at the dice independently, seeing snake eyes — two ones — (or any other outcome for that matter) would give us $6 + 6 = 12$ bits. But if we once again consider the joint probability distribution, and ask what the probability of rolling snake eyes is, that probability is $1/6 \cdot 1/6 = 1/32$ — so if we once again rolled snake eyes, we'd get 32 bits of information instead of 12! 
 
 What's going on here? We once again just combined two independent events together into one observation without changing their independence, without changing the probability — and the amount information changed. The problem is that we want information to change additively, not multiplicatively; when you "get more information" from an event your knowledge doesn't double, but increases linearly — at the same times as *probability*, the quantity we want to base our observations on, scales multiplicatively.
@@ -43,7 +46,7 @@ To go back to the dice scenario: when we look at the joint distribution of the t
 
 Take the $\log$ of it!
 
-Since we're working in binary already (with bits of information), we can use the $\log_2$ scale — our probability will be $P(x)$ and our information will be $\log_2(1/P(x))$. Ta-da! Here's our information equation: $$I[x] = log_2(\frac{1}{P(x)}) = -log_2(P(x))$$
+Since we're working in binary already (with bits of information), we can use the $\log_2$ scale — our probability will be $P(x)$ and our information will be $\log_2(1/P(x))$. Ta-da! Here's our information equation: $$I[x] = \log_2(\frac{1}{P(x)}) = -\log_2(P(x))$$
 (Sometimes it's nicer to use a negative sign instead of an inverse, but they're equivalent.)
 
 To sum it up, we use $1/P(x)$ because we want information to be inversely proportional to probability — the occurrence of a (in our minds) low-probability event should give us lots of information, and the reverse for high-probability events. Then we add the $\log$ so that information will *add* when we look at multiple events together, instead of multiplying — it'll accumulate nicely over time instead of exponentiating rapidly.
@@ -62,15 +65,18 @@ We might want to look at information on the level of a probability distribution.
 
 One thing we can talk about is *entropy.* Entropy in information theory describes something like, "How predictable is this distribution? How *surprised* will I be on average by an outcome?" In general, entropy measures the predictability of a distribution. (This is not a notion limited to information theory. For example, in statistical mechanics, the entropy of a particular macrostate/thermodynamic state is the number of possible microstates that could produce that macrostate — in other words, the unpredictability of the precise arrangements of atoms for a given macrostate; the unpredictability of the particular positions of atoms, summed over the distribution of all of them.)
 
-Intuitively, to talk about how much we expect to be surprised given a distribution of the probabilities of possible outcomes of an event, we can do a simple expected value calculation: take the sum of the information content of each possible outcome, weighted by the probability of the outcome.
+Intuitively, to talk about **how much we expect to be surprised** given a distribution of the probabilities of possible outcomes of an event, we can do a simple expected value calculation: take the sum of the information content of each possible outcome, weighted by the probability of the outcome.
 
-Hence, we can describe Shannon entropy (information-theoretic entropy, that is) for a probability distribution $X$ using the following formula:
+Hence, we can describe "expected surprise", AKA Shannon entropy ($H$[^1], for a probability distribution $X$ using the following formula:
 $$ H(X) =\sum_{\text{all outcomes in x}} \text{P(outcome)} \cdot  \text{Info if outcome occurs}$$
+
 
 Written in variables:
 $$H(X) =\sum_{x \in X} P(x) \space \log_2 \frac{1}{P(x)}$$
 or $$ H(X) =-\sum_{x \in X} P(x) \space \log_2P(x) $$
 where $X$ is a distribution of individual events $x$ and $P(x)$ is the probability you assign to the event. Hence, this sum represents going across each possible event in the distribution and computing the value $P(x) * \log_2(1/P(x)$ — corresponding to the info given by an outcome, weighted by how likely it is — then summing that up for each distribution. 
+
+
 
 ![Entropy Distribution](entropy-distribution.png)
 ***Fig 2:** The graph of $-x * \log_2(x)$, which you can call the "expected surprisal" — the probability of the outcome occurring times the surprise that you would receive if it did occur. Notice how the graph is skewed right, but low-probability events, even though they have high surprisal, will have low expected surprisal because they're so unlikely.*
@@ -106,24 +112,61 @@ $Q$ is your model of the distribution of outcomes for that coin toss. (You assum
 
 How do we measure the difference between these two simple distributions? 
 
-One way to do this would be to measure the **expected information** that we'd receive from playing this game, thinking that the outcomes were governed by distribution $Q$ when actually they were governed by $P$. 
+One way to do this would be to measure the expected *additional* surprise that we'd receive from playing this game *thinking that the outcomes were governed by distribution $Q$ when actually they were governed by $P$.* To put it another way, we'd be measuring the additional surprise we get if we think $Q$ *instead* of $P$ is true.
 
-Our expected information for a single game would be $$P(\text{Heads})\log(\frac{1}{P(\text{Heads})})-P(\text{Heads})\log(\frac{1}{Q(\text{Heads})})$$$$+ P(\text{Tails})\log(\frac{1}{P(\text{Tails})})-P(\text{Heads})\log(\frac{1}{Q(\text{Tails})})$$
+If you're using model $Q$ when the true probability distribution is $P$, the expected *additional* surprise for that single event will intuitively be
 
-Which simplifies to 
+- the *true* frequency of the event ($P(x)$)
+- times the *additional* amount you're surprised when it happens using $Q$, relative to the amount you'd be surprised if you used $P$ instead.
 
-$$P(\text{Heads}) * \log(\frac{1/P(\text{Heads})}{1/Q(\text{Heads})}) + P(\text{Tails}) * \log(\frac{1/P(\text{Tails})}{1/Q(\text{Tails})}) $$
+Formally, you write this as $$P(x)\cdot(\ln(\frac{1}{Q(x)})-\ln(\frac{1}{P(x)}))$$
+and if you want to look at this across the whole distribution (each event $x$ in the set of events $X$), you just use the summation
 
-Which further simplifies to
-$$P(\text{Heads}) * \log(\frac{Q(\text{Heads})}{P(\text{Heads})}) + P(\text{Tails}) * \log(\frac{Q(\text{Tails})}{P(\text{Tails})}) $$
+$$\sum_{x \in X}P(x)\cdot(\ln(\frac{1}{Q(x)})-\ln(\frac{1}{P(x)}))$$
+giving you the formula for KL Divergence! 
 
-Which, if we write in decimal form, would be
+(Also, if you're confused by the use of $\ln$ instead of $\log_2$, see footnote [^2]. TL;DR the different logarithms don't matter much, you just kinda use whatever's convenient, so I'm switching to $\ln$ here because it's conventional for calculating KL divergence and is hence convenient.)
 
-$$0.3*\log(0.5/0.3)+0.7*\log(0.5/0.7)$$
+You might notice that this looks a *lot* like the entropy formula, which if you recall (now with $\ln$ instead of $log_2$) is $$H(X) =\sum_{x \in X} P(x) \space \ln \frac{1}{P(x)}$$. This similarity should make sense! Remember that entropy measures expected surprise; KL divergence measures expected *additional* surprise. In fact, another name for KL divergence or expected additional surprise is *relative entropy!* The only difference is that you're now measuring the divergence of one distribution from another, instead of just the expectations you have about a single distribution in isolation.
 
-| X   | H   | T   |
-| --- | --- | --- |
-| P   | 0.3 | 0.7 |
-| Q   | 0.5 | 0.5 |
+Great. Now we can use this to calculate the divergence of our predictions from the true probabilities of heads/tails from Anansi's coin — but first, let's adjust some things in this formula real quick, so that this definition looks like the more standard one on Wikipedia. First, we need to give it a formal function name. Standard is $D_{KL}(P \space ||\space Q)$ ("the KL divergence of P from Q"):
+$$D_{KL}(P \space ||\space Q) = \sum_{x \in X}P(x)\cdot(\ln(\frac{1}{Q(x)})-\ln(\frac{1}{P(x)}))$$
 
-$$0.3 * \log(0.3/0.5) + 0.7 * \log(0.7/0.5)$$
+Then we do a bit of logarithm algebra, turning the log subtraction into division inside one logarithm: 
+
+$$D_{KL}(P \space ||\space Q) = \sum_{x \in X}P(x)\cdot\ln(\frac{\frac{1}{Q(x)}}{\frac{1}{P(x)}})$$
+And then we just simplify the fraction using the reciprocals to get our final equation:
+$$D_{KL}(P \space ||\space Q) = \sum_{x \in X}P(x)\cdot\ln(\frac{P(x)}{Q(x)})$$
+To reaffirm this intuitive derivation, let's get back to playing games with Anansi. Our expected additional surprisal for a single game would be $$\textbf{(1)} \: \: P(\text{Heads})\cdot [\ln\frac{1}{Q(\text{Heads})}-\ln\frac{1}{P(\text{Heads})}]$$$$+ \space \space \space P(\text{Tails})\cdot[\ln\frac{1}{Q(\text{Tails})}-\ln\frac{1}{P(\text{Tails})}]$$
+
+Which we can simplify as follows:
+
+$$\textbf{(2)} \: \: P(\text{Heads}) \cdot \ln(\frac{1/Q(\text{Heads})}{1/P(\text{Heads})}) + P(\text{Tails}) \cdot \ln(\frac{1/Q(\text{Tails})}{1/P(\text{Tails})}) $$ 
+$$\textbf{(3)} \: \:P(\text{Heads}) \cdot \ln\frac{Q(\text{Heads})}{P(\text{Heads})} + P(\text{Tails}) \cdot \ln\frac{Q(\text{Tails})}{P(\text{Tails})} $$
+
+Now, we can write it all in decimal form, substituting according to our two-way table 
+
+|          | Heads | Tails |
+| -------- | ----- | ----- |
+| **P(x)** | 0.3   | 0.7   |
+| **Q(x)** | 0.5   | 0.5   |
+
+$$0.3 \cdot \ln(0.5/0.3)+0.7 \cdot\ln(0.5/0.7) \approx 0.08228 $$
+To confirm this, we can write a little python script (credit to [Zach Bobbitt on Statology](https://www.statology.org/kl-divergence-python/)): 
+
+
+
+		from scipy.special import rel_entr
+		
+		P = [0.3, 0.7]
+		Q = [0.5, 0.5] 
+		
+		print(sum(rel_entr(P, Q)))
+
+
+Which nicely yields `0.08228287850505178`. :D
+
+
+[^1]: As a fun little note, the letter $H$ is standard notation after it was used by Shannon. Apparently it was originally supposed to be the greek letter Eta — which looks exactly the same as H, such that LaTeX doesn't even have a separate symbol for it, you're just supposed to use `$H$` — which is [apparently what Boltzmann used originally](https://math.stackexchange.com/questions/84719/why-is-h-used-for-entropy) used originally for thermodynamic entropy, since the letter E was already taken for other things. 
+
+[^2]: I told you earlier we would be working in $\log_2$ because it made sense in context. However, turns out that the units don't matter much for your calculation, and there's no "standard" unit of information. However, from what I've seen, most KL divergence calculators use $\ln$ instead of $\log_2$ or $\log$, since in various other places in statistics the $\ln$ function is more common, and therefore using "nats" of information (the unit when we calculate using log base $e$ as opposed to log base 2) allows for easier simplification of calculations. **Hence, for now, I'm going to switch to using nats and $\ln$ instead of bits and $\log_2$.** 
