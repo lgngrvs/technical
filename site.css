@@ -25,17 +25,17 @@ img {
 }
 
 table, th, td {
-  border: 1px solid;
-  border-collapse: collapse;
-  padding: 1ch;
+	border: 1px solid;
+	border-collapse: collapse;
+	padding: 1ch;
 }
 
 table {
-margin: auto; 
+	margin: auto; 
 }
 
 code {
-  background-color: #f6f6f6;
+	background-color: #f6f6f6;
 	border-radius: 0.25em;
 
 }
@@ -44,5 +44,6 @@ pre {
 	background-color: #f6f6f6;
 	border-radius: 0.25em;
 	padding: 1ch;
-	
+	overflow: scroll;
+
 }
