@@ -10,7 +10,6 @@ The **Nash Equilibrium** is the strategy for a game such that, holding the other
 
 - If everyone picks 0 in the first round of this game, and then you decide to play a second one, no one has a reason to unilaterally change their guess -- if they do, they'll be ~guaranteed not to win. Hence, once everyone picks 0, you're at a stable strategic state: the Nash Equilibrium. 
 
-
 You could argue that the Nash Equilibrium is generally the "rational choice" for an agent, since it's the only place where you don't have an incentive to change strategy, but for the classical single-round prisoner's dilemma, the Nash Equilibrium is to defect. If either player cooperates the other has an incentive to change strategy and defect.
 
 Can't we do better than this?
@@ -216,9 +215,45 @@ The EDT formalization is much simpler, though to make it make sense we need to a
 > 
 > In this formalization, EDT recommends choosing one box ($a_1$) because it has a higher expected value. This aligns with the typical EDT solution to Newcomb's Paradox, where choosing one box is seen as evidence that you're the type of person the predictor would give $1,000,000 to.
 
-So here, EDT wins against CDT. Yay! Does that mean EDT is strictly better than CDT? Not really. EDT has its own failure modes in other thought experiments, meaning we have to keep iterating, keep creating new attempts at decision theories that *win.*
+So here, EDT wins against CDT. Yay! Does that mean EDT is strictly better than CDT? Not really, as we'll see in a moment. EDT has its own failure modes in other thought experiments, meaning we have to keep iterating, keep creating new attempts at decision theories that *win.*
 
 I said earlier that CDT is focused on causal influence. I want to revisit and clarify that intuition. Another way to look at this is that CDT sees an agent's actions as *independent* from other actions taken simultaneously in the agent's environment — meaning it has trouble taking into account other agents' simulations of itself. An agent that is known to be a causal decision theorist will have trouble engaging with the idea that the other agents are making predictions knowing the calculations that CDT does.
+
+That's really what Newcomb's problem is about. It's easy to get stuck on the idea that Omega is perfectly accurate, or almost so, because it feels unrealistic or confusing — the way that I see it is that it's really just a way of introducing the idea that "there are other agents who have been modeling you, and your decision theory needs to take that into account *in the beginning.*" 
+
+Similar calculations will still apply if Omega is only 99% correct or 90% correct, the calculation is just less simple. For CDT, we just did algebra that ignored the real probability calculations: 
+
+> CDT assumes that the choice made doesn't affect the prediction. Therefore, we can simplify, since regardless of the choice the probability of outcome $o_1$ doesn't change.
+> 
+> Hence, let $p = P(a \space\Box \rightarrow o_1) = P(a_1 \space\Box \rightarrow o_1) = P(a_2 \space\Box \rightarrow o_1)$
+
+So it doesn't matter what Omega's prediction accuracy is, CDT always two-boxes. EDT is different. Here's what it looks like if Omega is 90% correct:
+
+> The key difference in EDT is that it considers the conditional probabilities $P(o_i|a)$, which can be different for each action. In Newcomb's problem, these probabilities are typically assumed to be:
+> 
+> - $P(o_1|a_1) = 0.9$ (90% probability of $1,000,000 if you choose one box)
+> - $P(o_2|a_1) = 0.1$ (10% probability of $0 if you choose one box)
+> - $P(o_1|a_2) = 0.1$ (10% probability of $1,100,000 if you choose two boxes)
+> - $P(o_2|a_2) = 0.9$ (90% probability of just $1,000 if you choose two boxes)
+> 
+> Let's use these probabilities in our equations:
+> 
+> $\mathbb{E}_{EDT}(a_1) = (1,000,000 \cdot 0.9) + (0 \cdot 0.1) = 900,000$
+> 
+> $\mathbb{E}_{EDT}(a_2) = 1,001,000 \cdot 0.1 + 1,000 \cdot 0.9 = 101,000$
+
+Still, CDT two-boxes and EDT one-boxes. EDT changes its decision when Omega is *only very slightly better than a random coin flip* — when Omega's accuracy percentage (modeled here as $x$) is 0.5005 and the expected value curves intersect.
+
+![EDT-newcombs-distribution.png](EDT-newcombs-distribution.png)
+
+## Where CDT wins: the smoking lesion problem
+
+todo
+
+okay im bored
+
+
+
 
 **TODO**
 
@@ -230,6 +265,8 @@ I said earlier that CDT is focused on causal influence. I want to revisit and cl
 	- [ ] timeless decision theory
 - [ ] connect decision theory to ethics
 - [ ] timeless and updateless decision theory
+- [ ] decision theories are about "winning" — chooosing the right outceom
+	- [ ] makes me think about the stuff about, is intuition valid in philosophy
 
 - [ ] Reflexive stability: if you write a successor agent, does your decision theory tell you to implement itself, or does it allow you to self-modify
 - [ ] supermoral ai — moral reality check
