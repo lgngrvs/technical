@@ -1,0 +1,195 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>new life</title>
+            <link rel="stylesheet" href="site.css">
+        </head>
+        <body>
+            <div id="wrapper">
+                <h1>Building a transformer</h1>
+<p>Seems like it's worthwhile just to figure out how to write a transformer from scratch. This is the thing that's exciting and interesting, and I don't give a fuck about signaling anymore. I will not allow my lack of knowledge to be a burden. The thing that I care about is being able to actually do things and talk about things and make things that work. </p>
+<p>This isn't really a proper explainer, because I leave out most of the intuitions that I already have, say about what embeddings are and what they represent, and also just generally what certain components of the model actually do. This is an explainer that gets <em>me</em> from <em>where I started</em> to <em>where I ended</em>, and might not properly explain things at all. It's a third of the way from a notebook to a blog post, or something like that.</p>
+<p>the code for this repo is ==here== (haven't added link yet)</p>
+<h2>Day 1: building a transformer</h2>
+<p>The transformer is the most interesting thing to me right now, so here's the goal. I'm going from high level to low level (using Claude for questions and debug), explaining the intuitions in this blog post as I go. I will build basic familiarity by doing the most basic task.</p>
+<h3>Code Part 1: Some easy parts</h3>
+<p>First we need to define the architecture as a whole. Paradigmatically, we build a class, a data structure, then we instantiate it to train it. I think the easiest thing to start with is the forward pass; for now it'll be essentially pseudocode. Since we want the transformer to be a self-contained data structure, we can initialize most functions in the <code>DecoderOnlyTransformer</code>'s <code>__init__</code> class, hence the functions mostly being <code>self.something()</code> instead of <code>something()</code>. We'll do that in a second. First we'll build the basic forward-pass stuff.</p>
+<pre><code>class DecoderOnlyTransformer():
+
+    def forward(self, x):
+
+        x = self.embed(x)
+        x = self.positional_encoding(x)
+
+        for layer in self.layers:
+            x = layer(x)
+
+        output = self.out_mlp(x)
+        return output
+</code></pre>
+<p>Okay, great. There's our forward pass. We run it through an embed layer, add the positional embeddings, put it through $n$ transformer layers, then run it through an out MLP layer. Now let's design the <code>__init__</code> part. </p>
+<p>At this point we need to start specifying hyperparameters. We need the following:</p>
+<ul>
+<li><code>vocab_size</code>: how many distinct embeddings our model can work with. We'll pass this into our embedding function.</li>
+<li><code>d_model</code> is the dimensionality of the embeddings, and hence the dimensionality of the model. GPT-2-medium (2019) used embeddings of size 1280; LLaMA-65B (2023) uses embeddings of size 8192. This is the number of dimensions in the embedding-space, sometimes referred to the number of "features" per embedding, but I find this terminology confusing (since these 'features' are dense and polysemantic, and mostly uninterpretable)</li>
+<li><code>num_heads</code>: the number of attention heads we'll have per layer</li>
+<li><code>num_layers</code>: the number of transformer layers we'll have in the model as a whole</li>
+<li><code>max_seq_length</code>: the maximum number of tokens our model can handle as an input. (longer sequences will just get truncated)</li>
+<li><code>d_ff</code> is the dimensionality of the hidden dimension in the feed-forward (also known as MLP, since they're just traditional multilayer perceptrons) networks we use.</li>
+</ul>
+<p>We're gonna use PyTorch's <code>nn</code> module for this. We can implement everything relatively intuitively right now except for one which I want to explain.</p>
+<pre><code>class DecoderOnlyTransformer(nn.Module):
+
+    def __init__(self, vocab_size, d_model, num_heads, num_layers, d_ff, max_seq_length):
+        super(DecoderOnlyTransformer, self).__init__()
+        self.d_model = d_model
+        self.embedding = nn.Embedding(vocab_size, d_model)
+        self.positional_encoding = PositionalEncoding(d_model, max_seq_length)
+
+        self.layers = nn.ModuleList([DecoderLayer(d_model, num_heads, d_ff) for _ in range(num_layers)])
+
+        self.out_mlp = nn.Linear(d_model, vocab_size)
+
+
+    def forward(self, x):
+
+        x = self.embed(x)
+        x = self.positional_encoding(x)
+
+        for layer in self.layers:
+            x = layer(x)
+
+        output = self.out_mlp(x)
+
+        return output
+</code></pre>
+<p>The line which I'll explain is the <code>super(DecoderOnlyTransformer, self).__init__()</code>. We need this because we're importing the <code>nn.Module</code> parent class, and we need to initialize the methods that come with it. </p>
+<p>Okay! That's the whole top-level architecture. Now we just need to define the components we used — <code>PositionalEncoding</code>, <code>PositionalEncoding</code>, <code>MultiHeadAttention</code>, and <code>PositionwiseFeedForward</code>.</p>
+<p>Now for <code>DecoderLayer</code>. We want it to have self-attention, normalization, feedforward, normalization — this is the classic shape of a transformer block. We define the <code>init</code> pretty much intuitively — holding <code>MultiHeadAttention</code> and <code>PositionwiseFeedForward</code> methods to be implemented later — save for the <code>super</code> which just tells the model to init some of the methods contained in the Pytorch library for neural network modules, so we don't have to do all the annoying work of defining i/o stuff and vector stuff ourselves.</p>
+<pre><code>class DecoderLayer(nn.Module): 
+    def __init__(self, d_model, num_heads, d_ff):
+        super(DecoderLayer, self).__init__()
+        self.self_attn = MultiHeadAttention(d_model, num_heads)
+        self.feed_forward = PositionwiseFeedForward(d_model, d_ff)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+
+    def forward(self, x): 
+        attn_output = self.self_attn (x, x, x)
+        x = self.norm1(x + attn_output)
+        ff_output = self.feed_forward(x)
+        x = self.norm2(x+ff_output)
+        return x
+</code></pre>
+<p>Some notes: </p>
+<ul>
+<li>The <code>x, x, x</code> being passed into <code>attn_output</code> are the things we're going to project into the key, query, and value matrices. (I thought this implementation was a little weird, but in other architectures, apparently, you might use the encoder's outputs here instead of x to project into the kqv matrices, so we leave this as an easily-modifiable line of code in case we want to adjust this for some different architecture.)</li>
+<li>Notice that we're <em>adding</em> to the residual stream: the attention output is added to the input of the layer, rather than attention spitting out a perfectly usable new set of tokens.</li>
+<li>Note that normalizations are after the outputs of the layer</li>
+</ul>
+<p>Moving on! we're almost halfway there. The Multi-head attention layer is the least simple of our remaining three substructures, so I'll go for that one. </p>
+<pre><code>def MultiHeadAttention(nn.Module):
+
+    def __init__(self, d_model, num_heads):
+        super(MultiHeadAttention, self).__init__()
+        assert d_model % num_heads == 0
+
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads
+
+        self.W_q = nn.Linear(d_model, d_model)
+        self.W_k = nn.Linear(d_model, d_model)
+        self.W_v = nn.Linear(d_model, d_model)
+        self.W_o = nn.Linear(d_model, d_model)
+
+
+    def forward(self, query, key, value , mask=None)
+        batch_size = query.size(0)
+
+        Q = self.W_q(query).view(batch_size, -1, self.num_heads, self.d_k).transpose(1,2)
+        K = self.W_k(key).view(batch_size, -1, self.num_heads, self.d_k).transpose(1,2)
+        V = self.W_v(value).view(batch_size, -1, self.num_heads, self.d_k).transpose(1,2)
+
+        output = self.scaled_dot_product_attention(Q, K, V, mask)
+        output = output.transpose(1,2).contiguous().view(batch_size, -1, self.d_model)
+</code></pre>
+<p>Okay, I'm not gonna lie, I'm pretty confused about what's happening here. I don't think "halfway there" was quite correct.</p>
+<h3>How MHSA works</h3>
+<p>Sources: 
+- <a href="https://machinelearningmastery.com/the-transformer-attention-mechanism/">The Transformer Attention Mechanism</a> (for reference)
+- <a href="https://arxiv.org/pdf/1706.03762">Attention is all you need</a>, the original paper (for notation and reference, though note that this paper describes an encoder-decoder transformer, not the decoder-only transformer we're describing.)
+- <a href="https://www.youtube.com/watch?v=eMlx5fFNoYc">3Blue1Brown's attention video</a> (for intuitions and review on $V$ matrices)
+- LLMs (mostly this; asking questions based on preexisting knowledge)
+- My own preexisting knowledge</p>
+<p>Each self-attention head <em>projects</em> the entire residual stream down into a smaller space. The projection matrices are linear transformations that take this larger embedding and compress it into the smaller space, potentially emphasizing specific features as this happens:
+$$\text{head}_i = \text{Attention}(QW^Q_i,KW^K_i,VW^V_i).$$
+where the $W$ matrices are learned projection matrices. In our case for this basic transformer, the original $Q$, $K$, and $V$ matrices that we're passing in are literally just the residual stream, aka <code>x</code>. The residual stream has shape $N \times D$, where $N$ is the input sequence length and $D$ is the is the embedding size we set for the model, aka <code>d_model</code>; each head uses its own $W$ matrices to project the residual stream down into smaller dimensions, specifically for the $Q$ and $K$ matrices, $N \times \frac{D}{H}$, where $H$ is the number of heads, aka <code>num_heads</code>. </p>
+<p>We're going to be using this $D/H$ quantity a lot, so let's give it a name that's easier to look at. Common notation is $d_k = \frac{D}{H}$. We call id $d_k$ because it's the dimensionality of the key matrix (and hence also the dimensionality of the query matrix). My guess at why we use the notation $d_k$ is that we don't want to produce confusion with $D$ (the model's embedding size), so we use little $d$, and it's subscript $k$ instead of capital $K$ because we're referencing "the size of the key <em>vectors</em>" instead of the size of the key matrix — since that's sorta a two-dimensional quantity. The key matrix is made of key vectors (e.g. to loop through each key vector you'd write $\sum_{k \in K}$, $k$ being each vector in $K$, like how you use $\sum_{x \in X}$ for summing over each event in a probability distribution). Thus, $W^Q$ and $W^K$ are of shape $D \times d_k$, such that they can do this projection from the $N \times D$ residual stream to the $N \times d_k$ dimensions of the $Q$ and $K$ matrices. $W^V$ and $V$ are a different shape which I'll talk about a little later.</p>
+<p>Claude calls these projections different "views" of the same residual stream; by having its own learned projection matrix, each different attention head gets a different way of looking at the same inputs.</p>
+<p>To give a more concrete example with numbers, let's say you have a model with <code>d_model = 512</code> and <code>n_heads = 8</code>. You pass in a matrix of shape $N \times 512$ (where $N$ is the number of tokens in the input sequence), and each head projects it down to shape $N \times 64$. Why 64 specifically? This is not an arbitrary number. You need to project the residual stream down to exactly <code>d_model/n_heads</code> dimensions. This seemed arbitrary at first, but the reason for this specific number is revealed later in the self-attention computation process: you need to be able to concatenate them all later to recover the original dimensionality — if this doesn't make sense, keep reading, and it'll make sense in a bit. </p>
+<h4>MHSA: Computing attention</h4>
+<p>After the projection, you compute attention using the dot product similarity of the Query and Key. This looks like $$\text{attention}(Q,K,V) = \text{softmax}(\frac{QK^{\top}}{\sqrt{d_k}})V$$
+where, remember, $d_k$ is just $\frac{D}{H}$. Here it's just a random scalar used to prevent the <a href="https://en.wikipedia.org/wiki/Vanishing_gradient_problem">problem of vanishing/exploding gradients</a>:</p>
+<blockquote>
+<p>We suspect that for large values of dk, the dot products grow large in magnitude, pushing the softmax function into regions where it has extremely small gradients 4 . To counteract this effect, we scale the dot products by $1/\sqrt{d_k}$ .</p>
+</blockquote>
+<p>It's a constant here, though, so maybe don't worry about it. I just didn't have a better spot to address that constant's presence in the equation :(</p>
+<p>Anyway, this is a quite compact equation, so I'll break the rest of it down gradually. </p>
+<p>What this is actually doing first is taking the dot-product similarity of each vector in the $Q$ matrix with each other vector in the $K$ matrix. Note that to do this you need to flip the $K$ vector across the diagonal (see this <a href="https://en.wikipedia.org/wiki/Transpose#/media/File:Matrix_transpose.gif">gif for a visualization</a>, highly recommended) so that the vectors in the $Q$ columns can correspond to the vectors in the $K$ rows; this operation is called a <a href="https://en.wikipedia.org/wiki/Transpose">transpose</a>. (That's what the $\top$ is in $QK^\top$ above — just a fancy T for transpose.)</p>
+<p>Well, to clarify, we don't actually dot-product <em>every</em> $Q$ vector with <em>every</em> $K$ vector; we apply a <em>mask</em>, such that each token can only attend to the tokens that precede it in the sequence — this is important for training. Grant talks more about this in the 3b1b video, but it's something I already mostly get so I'm leaving it out. I mention this just so that (a) when we see <code>mask</code> in the transformer later it won't be surprising and confusing, and (b) when I'm looking at visualizations of attention patterns I will remember why they're triangles instead of squares.</p>
+<p>The intuition I have for this is that each attention head learns to construct $Q$ and $K$ vectors, such that this dot-product similarity work nicely as follows:</p>
+<p>Each attention head specializes in some specific relationship(s). (Since transformers use space extremely efficiently, you will rarely have just one, but I'll use just one here order to simplify usefully.) For example — this is the example given in the classic 3blue1brown video linked above — a nicely-interpretable attention head might specifically learn relationships where adjectives modify the meanings of nouns, such that its <em>query</em> vectors for noun tokens in the query matrix will have high dot-product similarity with <em>key</em> vectors for the adjective tokens in the key matrix that modify it. You can intuit this as "nouns look one way in the query matrix, and adjectives look similar to them in the key matrix," such that when you compute their dot-product similarity, the adjectives will have high attention scores for the nouns.</p>
+<p>So now we have a matrix filled with dot-products of query vectors and key vectors, representing some relationships between them. How do we turn this attention score into an actual adjustment in embedding-space, an adjustment we can add to the vector's meaning to make it more precise? Simple! We just use multiplication.</p>
+<p>But actually, it's not that simple at all. This function is distributed across the $V$ and the $W^O$ matrices, and hence takes places across two different steps. </p>
+<p>The first step is the $V$ matrix. We use $W^V$ to project the residual stream embeddings into fewer dimensions, like before — that is our $V$ matrix. Our $V$ matrix is shaped like $N$ by $d_v$. (For this model $d_v = d_k$, but the original paper uses this $d_v$ notation so I'm sticking with it.) This leaves us with some sort of compact representation of each vector in the residual stream.</p>
+<p>The $V$ matrix goes embedding-by-embedding through the $QK^\top$ matrix and generates the desired adjustments to the residual stream embeddings. It does this by <em>multiplying each of its compact representations of the residual stream embeddings by their attention score</em>, which as we remember corresponds to that embedding's relevance to each preceding embedding — each time yielding a scaled vector — and then adds them up. (3b1b <a href="https://youtu.be/eMlx5fFNoYc?feature=shared&amp;t=863">visualizes this</a> much more nicely than I can describe it.) </p>
+<p>For example, for the vector corresponding to the embedding in position $n$, we multiply the each vector's dot-product attention score for $n$ with the compact-ified embedding for that vector produced by the $W^V$ matrix. This produces scaled vectors that we add up to be the whole adjustment to the embedding in position $n$ — though, keep in mind, we still need to combine this with the outputs of the other heads and scale this back up to the full embedding space dimensions.</p>
+<p><em>The result from applying the $V$ matrix multiplication to our $QK^\top$ matrix is the output of our attention head.</em> We've multiplied the attention pattern by vectors corresponding to something like "the meaning of the corresponding vector", such that now not only does this attention pattern act as simply a score for related-ness for embedding $n$ and each other embedding preceding it, but a score for relatedness between $n$ and each other preceding embedding <em>times a compact representation of the meaning those preceding embeddings.</em></p>
+<h4>MHSA: Concat and output</h4>
+<p>Once you have the output of the heads, you need to combine them. The way to do this is just by concatenating them, then multiplying them by another learned weights matrix:</p>
+<p>$$\text{MultiHeadAttention}(Q, K, V) = \text{Concat}(\text{head}_1, \: ..., \:\text{head}_n)W^O$$</p>
+<p>We finally get to use $W^O$ ! I mentioned earlier that the process of turning dot-product attention patterns into meaningful adjustments to embeddings had two parts; we have done the first part using the $V$ matrix. Now we need to combine and scale up these many smaller-dimension head outputs. So we concatenate them all to make them the same dimensionality as the residual stream, and then use a linear transformation $W^O$ to combine them into this scaled-up form that plays nicely with our existing residual stream values.</p>
+<p>Aye, you <em>concatenate</em> them. Intuitively I was like "oh you should just add them together and then project them up to the original dimensions" but actually, this makes more sense: by concatenating the outputs of all the heads and then using a linear projection, you allow the model to give different weights to the different heads as well as to move information around from the different heads how it wants. Simple element-wise addition would give the same weight to every head; this doesn't necessarily make sense! Some views on the information might be more subtle or less important than others.</p>
+<p>The concatenated matrix doesn't <em>have</em> to have the same dimensionality as the residual stream; we have our $W^O$ matrix, and could use that to project the concatenated attention head outputs to the residual stream dimension regardless of the shape of the pre-projection concatenated outputs, as long as they were consistent. As far as I can tell, the reason that we don't do that is just (a) it would add more complexity to the model, as well as additional hyperparameters to tune and (b) the $D/H$ approach works well already. There are apparently other architectures that do this (I got a list from ChatGPT: <a href="https://arxiv.org/abs/2001.04451">Reformer</a>, <a href="https://arxiv.org/abs/2006.04768">Linformer</a>, <a href="https://arxiv.org/abs/2005.00743">Synthesizer</a>, <a href="https://arxiv.org/abs/2007.14062">Big Bird</a>, <a href="https://arxiv.org/abs/1807.03819">Universal Transformers</a>, and <a href="https://arxiv.org/abs/1904.10509">Sparse Transformers</a>, though I didn't bother checking them all to see if they actually do this. On vibes it seems they do.)</p>
+<h3>Code part 2: the rest of it, or something.</h3>
+<p>Let's go back to our code for the <code>MultiHeadAttention</code> class, just the <code>init</code> this time.</p>
+<pre><code>def MultiHeadAttention(nn.Module):
+
+    def __init__(self, d_model, num_heads):
+        super(MultiHeadAttention, self).__init__()
+        assert d_model % num_heads == 0
+
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads
+
+        self.W_q = nn.Linear(d_model, d_model)
+        self.W_k = nn.Linear(d_model, d_model)
+        self.W_v = nn.Linear(d_model, d_model)
+        self.W_o = nn.Linear(d_model, d_model)
+</code></pre>
+<p>When we <code>assert d_model % num_heads == 0</code>, we're confirming that the embedding size can be divided nicely to structure our attention heads. We create the d_k value described above ($d_k$) and then we initialize the $W^Q$, $W^K$, $W^V$, and $W^O$ matrices. (The <code>nn.Linear(x, y)</code> method creates a matrix, aka a linear transformation, of dimensions $x \times y$.)</p>
+<p>I was initially really thrown by the fact that these matrices are both $D \times D$ instead of $D \times d_k$ — but it turns out this is actually a really natural way to do this. Remember how we concatenate all the attention head outputs in order to use them with the $W^O$ matrix? We do something similar here — the <code>W_k</code> variable holds <em>all the $W^K$ matrices for all the attention heads in one, just concatenated together for easy reference.</em> Something like: $$\texttt{W_q} = \text{Concatenate}(W^Q_0, W^Q_1, \: \: ..., W^Q_N)$$and likewise for <code>W_k</code>, <code>W_v</code>, and <code>W_o</code>.</p>
+<p>We will use methods in the <code>forward()</code> function to split these apart into each head's specific weights and use them. This way is cool because we can do so with no looping and no extra variables — all the weights stay in one matrix, and we just index that matrix to access each head's individual weights.</p>
+<p>Now, for the forward function:</p>
+<pre><code>def forward(self, query, key, value , mask=None)
+    batch_size = query.size(0)
+
+    Q = self.W_q(query).view(batch_size, -1, self.num_heads, self.d_k).transpose(1,2)
+    K = self.W_k(key).view(batch_size, -1, self.num_heads, self.d_k).transpose(1,2)
+    V = self.W_v(value).view(batch_size, -1, self.num_heads, self.d_k).transpose(1,2)
+
+    output = self.scaled_dot_product_attention(Q, K, V, mask)
+    output = output.transpose(1,2).contiguous().view(batch_size, -1, self.d_model)
+</code></pre>
+<p>I think the notion of batches is pretty important here. </p>
+            </div>
+            <script type="text/javascript" src="mathjax.js"></script>
+            <script type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+        </body>
+        </html>
+        
