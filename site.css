@@ -36,12 +36,19 @@ table {
 
 code {
 	background-color: #f6f6f6;
+	word-wrap: break-word;
+
+	/*background-color: black;
+	color: white;*/
 	border-radius: 0.25em;
+	font-size: 11pt;
 
 }
 
 pre {
 	background-color: #f6f6f6;
+	/*background-color: black;
+	color: white;*/
 	border-radius: 0.25em;
 	padding: 1ch;
 	overflow: scroll;

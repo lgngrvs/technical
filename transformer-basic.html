@@ -13,7 +13,6 @@
 <p>Seems like it's worthwhile just to figure out how to write a transformer from scratch. This is the thing that's exciting and interesting, and I don't give a fuck about signaling anymore. I will not allow my lack of knowledge to be a burden. The thing that I care about is being able to actually do things and talk about things and make things that work. </p>
 <p>This isn't really a proper explainer, because I leave out most of the intuitions that I already have, say about what embeddings are and what they represent, and also just generally what certain components of the model actually do. This is an explainer that gets <em>me</em> from <em>where I started</em> to <em>where I ended</em>, and might not properly explain things at all. It's a third of the way from a notebook to a blog post, or something like that.</p>
 <p>the code for this repo is ==here== (haven't added link yet)</p>
-<h2>Day 1: building a transformer</h2>
 <p>The transformer is the most interesting thing to me right now, so here's the goal. I'm going from high level to low level (using Claude for questions and debug), explaining the intuitions in this blog post as I go. I will build basic familiarity by doing the most basic task.</p>
 <h3>Code Part 1: Some easy parts</h3>
 <p>First we need to define the architecture as a whole. Paradigmatically, we build a class, a data structure, then we instantiate it to train it. I think the easiest thing to start with is the forward pass; for now it'll be essentially pseudocode. Since we want the transformer to be a self-contained data structure, we can initialize most functions in the <code>DecoderOnlyTransformer</code>'s <code>__init__</code> class, hence the functions mostly being <code>self.something()</code> instead of <code>something()</code>. We'll do that in a second. First we'll build the basic forward-pass stuff.</p>
@@ -157,7 +156,7 @@ where, remember, $d_k$ is just $\frac{D}{H}$. Here it's just a random scalar use
 <p>The concatenated matrix doesn't <em>have</em> to have the same dimensionality as the residual stream; we have our $W^O$ matrix, and could use that to project the concatenated attention head outputs to the residual stream dimension regardless of the shape of the pre-projection concatenated outputs, as long as they were consistent. As far as I can tell, the reason that we don't do that is just (a) it would add more complexity to the model, as well as additional hyperparameters to tune and (b) the $D/H$ approach works well already. There are apparently other architectures that do this (I got a list from ChatGPT: <a href="https://arxiv.org/abs/2001.04451">Reformer</a>, <a href="https://arxiv.org/abs/2006.04768">Linformer</a>, <a href="https://arxiv.org/abs/2005.00743">Synthesizer</a>, <a href="https://arxiv.org/abs/2007.14062">Big Bird</a>, <a href="https://arxiv.org/abs/1807.03819">Universal Transformers</a>, and <a href="https://arxiv.org/abs/1904.10509">Sparse Transformers</a>, though I didn't bother checking them all to see if they actually do this. On vibes it seems they do.)</p>
 <h3>Code part 2: the rest of it, or something.</h3>
 <p>Let's go back to our code for the <code>MultiHeadAttention</code> class, just the <code>init</code> this time.</p>
-<pre><code>def MultiHeadAttention(nn.Module):
+<pre><code>class MultiHeadAttention(nn.Module):
 
     def __init__(self, d_model, num_heads):
         super(MultiHeadAttention, self).__init__()
@@ -253,34 +252,45 @@ where $\text{pos}$ is the position and $i$ is the dimension. That is, each dimen
 But we don't want to calculate this directly, because using large powers would potentially cause numerical instability (a catchall for problems with overflow, underflow, <a href="https://en.wikipedia.org/wiki/Catastrophic_cancellation">catastrophic cancellation</a>, etc.) so instead we do it in terms of logs, using the following transformation: </p>
 <p>$$10000^{2i/D} = e^{\ln(10000^{2i/D})} = e^{(2i/D) \cdot \ln(10000)}$$</p>
 <p>Here's the code: </p>
-<pre><code>    pe = torch.zeros(max_seq_length, d_model)
-    div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+<pre><code>pe = torch.zeros(max_seq_length, d_model)
+div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
 </code></pre>
 <p>What we do here is we first create an empty (all zeros) tensor with the dimensionality of the max input sequence's embeddings, which we'll fill with numbers as we go.</p>
 <p>Then we generate a tensor <code>[0, 2, 4, ..., d_model - 2]</code> using torch.arange() and then turn it into floating point numbers. We scale each number in this tensor by $-\frac{\ln(10000)}{D}$ (since <code>math.log</code> defaults to using base $e$ and calculating the natural log),  and finally raise all of that to the power of $e$ with <code>torch.exp</code>, leaving us with $$[0,2,4,...,D-2] \cdot\frac{1}{e^{\ln(10000)/D}}$$
 . After this it's pretty much smooth sailing; we create a tensor corresponding to each position in the input sequence, then turn it from a 1d tensor to a 2d, single-column tensor using <code>unsqueeze</code>: </p>
-<pre><code>    position = torch.arange(0, max_seq_length, dtype=torch.float).unsqueeze(1)
+<pre><code>position = torch.arange(0, max_seq_length, dtype=torch.float).unsqueeze(1)
 </code></pre>
-<p>Lastly, we fill the indices of that empty tensor we made earlier using the calculations we just prepared: </p>
+<p>(Unsqueeze turns the row vector into a column vector so that it can be multiplied with a matrix on the left.) Lastly, we fill the indices of that empty tensor we made earlier using the calculations we just prepared: </p>
 <pre><code>pe[:, 0::2] = torch.sin(position * div_term)
 pe[:, 1::2] = torch.cos(position * div_term)
 </code></pre>
-<p>Then we reshape the pe tensor and register it as a "buffer," which is a kind of data that is saved in the model and not updated during training: </p>
+<p>Then we reshape the <code>pe</code> tensor and register it as a "buffer," which is a kind of data that is saved in the model and not updated during training: </p>
 <pre><code>pe = pe.unsqueeze(0).transpose(0, 1)
 self.register_buffer('pe', pe)
 </code></pre>
 <p>and then define a hyper-simple forward pass that adds the positional encodings (up to the length of the input) to the input embeddings.</p>
-<pre><code>pe = pe.unsqueeze(0).transpose(0, 1)
-self.register_buffer('pe', pe)
+<pre><code>def forward(self, x):
+    return x + self.pe[:x.size(0), :]
 </code></pre>
-<p>TODO
-- explain the code for positional embeddings slightly better (mainly the shape stuff)
-- implement MLP
-- make the code actually run
-    - define a training method I guess :flushed:</p>
+<p>There's some nuance here about the shapes of tensors and the indexing, but I'm a little bit done with this project for the time being and want to move on, so I'm ignoring it.</p>
+<p>All that's left now is the MLP Layer. It's pretty straightforward: </p>
+<pre><code>class PositionwiseFeedForward(nn.Module):
+    def __init__(self, d_model, d_ff):
+        super(PositionwiseFeedForward, self).__init__()
+        self.fc1 = nn.Linear(d_model, d_ff)
+        self.fc2 = nn.Linear(d_ff, d_model)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        return self.fc2(self.relu(self.fc1(x)))
+</code></pre>
+<p>Basically a stupid simple 3-layer network: input, ReLU, output.</p>
+<h2>appendix: making it run</h2>
             </div>
             <script type="text/javascript" src="mathjax.js"></script>
             <script type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+	    <script src="microlight/microlight.js"></script>
+
         </body>
         </html>
         

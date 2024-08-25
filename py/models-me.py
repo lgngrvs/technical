@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import math
+from torch.nn import functional as F
 
 class DecoderOnlyTransformer(nn.Module):
     def __init__(self, vocab_size, d_model, num_heads, num_layers, d_ff, max_seq_length):
@@ -39,8 +40,6 @@ class DecoderLayer(nn.Module):
         ff_output = self.feed_forward(x)
         x = self.norm2(x + ff_output)
         return x
-
-# PositionalEncoding, MultiHeadAttention, and PositionwiseFeedForward classes remain the same
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, max_seq_length):
@@ -101,3 +100,59 @@ class PositionwiseFeedForward(nn.Module):
         
     def forward(self, x):
         return self.fc2(self.relu(self.fc1(x)))
+
+# Hyperparameters
+vocab_size = 1000
+d_model = 256
+num_heads = 8
+num_layers = 4
+d_ff = 1024
+max_seq_length = 100
+batch_size = 16
+seq_length = 20
+
+# Instantiate the model
+model = DecoderOnlyTransformer(vocab_size, d_model, num_heads, num_layers, d_ff, max_seq_length)
+
+# Generate some dummy input data
+input_data = torch.randint(0, vocab_size, (batch_size, seq_length))
+
+# Move the model and input data to GPU if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+input_data = input_data.to(device)
+
+# Set the model to evaluation mode
+model.eval()
+
+# Perform a forward pass
+with torch.no_grad():
+    output = model(input_data)
+
+# The output shape should be (batch_size, seq_length, vocab_size)
+print(f"Output shape: {output.shape}")
+
+# If you want to get the most likely next token for each position:
+next_token_logits = output[:, -1, :]  # Get the logits for the last token in each sequence
+next_token_probs = F.softmax(next_token_logits, dim=-1)
+next_token = torch.argmax(next_token_probs, dim=-1)
+
+print(f"Most likely next token for each sequence in the batch: {next_token}")
+
+# If you want to generate a sequence:
+def generate_sequence(model, start_sequence, max_length):
+    model.eval()
+    with torch.no_grad():
+        current_seq = start_sequence.clone()
+        for _ in range(max_length - len(start_sequence)):
+            output = model(current_seq)
+            next_token_logits = output[:, -1, :]
+            next_token_probs = F.softmax(next_token_logits, dim=-1)
+            next_token = torch.argmax(next_token_probs, dim=-1)
+            current_seq = torch.cat([current_seq, next_token.unsqueeze(0)], dim=1)
+    return current_seq
+
+# Generate a sequence starting with the first 5 tokens of our input data
+start_seq = input_data[:1, :5]  # Take the first sequence in the batch and its first 5 tokens
+generated_seq = generate_sequence(model, start_seq, max_length=30)
+print(f"Generated sequence: {generated_seq}")

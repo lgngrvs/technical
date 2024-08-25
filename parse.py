@@ -1,6 +1,7 @@
 from markdown import markdown
 import os 
 
+
 parent_directory = "markdown/"
 list_of_file_names = os.listdir(parent_directory)
 # print(list_of_file_names)
@@ -33,21 +34,24 @@ def generated_index():
     return list_template
 
 def remove_non_alphanumeric_keep_spaces(string):
-    return ''.join(char for char in string if char.isalnum() or char.isspace() or char=="-")
+	return ''.join(char for char in string if char.isalnum() or char.isspace() or char=="-")
+
+# def add_code_class(html_string):
+#	return html_string.replace("<code", "<code class='microlight'")
 
 
-for file_name in list_of_file_names: 
+for file_name in list_of_file_names:
     file_path = f'{parent_directory}{file_name}'
     content = ""
 
     with open(file_path) as file: # opens the markdown file
         file_text = file.read()
         content = markdown(file_text, extensions=["tables", "footnotes"])
-    
+
     # print(content)
 
     with open(file_name[:-3] + ".html", "w") as file: # opens a new html file with the filename
-        print(content)
+        #print(content)
         if file_name == "index.md": 
             content += generated_index()
 
@@ -66,8 +70,11 @@ for file_name in list_of_file_names:
             </div>
             <script type="text/javascript" src="mathjax.js"></script>
             <script type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+	    <script src="microlight/microlight.js"></script>
+
         </body>
         </html>
-        """            
-
+        """
+	
+        # completed_template = add_code_class(completed_template)
         file.write(completed_template)

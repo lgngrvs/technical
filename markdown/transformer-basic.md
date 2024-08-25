@@ -6,7 +6,8 @@ This isn't really a proper explainer, because I leave out most of the intuitions
 
 the code for this repo is ==here== (haven't added link yet)
 
-## Day 1: building a transformer
+
+
 
 The transformer is the most interesting thing to me right now, so here's the goal. I'm going from high level to low level (using Claude for questions and debug), explaining the intuitions in this blog post as I go. I will build basic familiarity by doing the most basic task.
 
@@ -189,7 +190,7 @@ The concatenated matrix doesn't *have* to have the same dimensionality as the re
 Let's go back to our code for the `MultiHeadAttention` class, just the `init` this time.
 
 
-	def MultiHeadAttention(nn.Module):
+	class MultiHeadAttention(nn.Module):
 	
 	    def __init__(self, d_model, num_heads):
 	        super(MultiHeadAttention, self).__init__()
@@ -305,34 +306,124 @@ $$10000^{2i/D} = e^{\ln(10000^{2i/D})} = e^{(2i/D) \cdot \ln(10000)}$$
 
 Here's the code: 
 
-		pe = torch.zeros(max_seq_length, d_model)
-	    div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+	pe = torch.zeros(max_seq_length, d_model)
+	div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
 
 What we do here is we first create an empty (all zeros) tensor with the dimensionality of the max input sequence's embeddings, which we'll fill with numbers as we go.
 
 Then we generate a tensor `[0, 2, 4, ..., d_model - 2]` using torch.arange() and then turn it into floating point numbers. We scale each number in this tensor by $-\frac{\ln(10000)}{D}$ (since `math.log` defaults to using base $e$ and calculating the natural log),  and finally raise all of that to the power of $e$ with `torch.exp`, leaving us with $$[0,2,4,...,D-2] \cdot\frac{1}{e^{\ln(10000)/D}}$$
 . After this it's pretty much smooth sailing; we create a tensor corresponding to each position in the input sequence, then turn it from a 1d tensor to a 2d, single-column tensor using `unsqueeze`: 
 
-		position = torch.arange(0, max_seq_length, dtype=torch.float).unsqueeze(1)
+	position = torch.arange(0, max_seq_length, dtype=torch.float).unsqueeze(1)
 
-Lastly, we fill the indices of that empty tensor we made earlier using the calculations we just prepared: 
+(Unsqueeze turns the row vector into a column vector so that it can be multiplied with a matrix on the left.) Lastly, we fill the indices of that empty tensor we made earlier using the calculations we just prepared: 
 
 	pe[:, 0::2] = torch.sin(position * div_term)
 	pe[:, 1::2] = torch.cos(position * div_term)
 
-Then we reshape the pe tensor and register it as a "buffer," which is a kind of data that is saved in the model and not updated during training: 
+Then we reshape the `pe` tensor and register it as a "buffer," which is a kind of data that is saved in the model and not updated during training: 
 
 	pe = pe.unsqueeze(0).transpose(0, 1)
 	self.register_buffer('pe', pe)
 
 and then define a hyper-simple forward pass that adds the positional encodings (up to the length of the input) to the input embeddings.
 
-	pe = pe.unsqueeze(0).transpose(0, 1)
-	self.register_buffer('pe', pe)
+    def forward(self, x):
+        return x + self.pe[:x.size(0), :]
 
+There's some nuance here about the shapes of tensors and the indexing, but I'm a little bit done with this project for the time being and want to move on, so I'm ignoring it.
 
-TODO
-- explain the code for positional embeddings slightly better (mainly the shape stuff)
-- implement MLP
-- make the code actually run
-	- define a training method I guess :flushed:
+All that's left now is the MLP Layer. It's pretty straightforward: 
+
+	class PositionwiseFeedForward(nn.Module):
+	    def __init__(self, d_model, d_ff):
+	        super(PositionwiseFeedForward, self).__init__()
+	        self.fc1 = nn.Linear(d_model, d_ff)
+	        self.fc2 = nn.Linear(d_ff, d_model)
+	        self.relu = nn.ReLU()
+	        
+	    def forward(self, x):
+	        return self.fc2(self.relu(self.fc1(x)))
+
+Basically a stupid simple 3-layer network: input, ReLU, output.
+
+## appendix: making it run
+
+I feel a little burnt on this project for now so I'm just going to paste the Claude script that generates the output, just to show that it actually does run.
+
+	
+	# Hyperparameters
+	vocab_size = 1000
+	d_model = 256
+	num_heads = 8
+	num_layers = 4
+	d_ff = 1024
+	max_seq_length = 100
+	batch_size = 16
+	seq_length = 20
+	
+	# Instantiate the model
+	model = DecoderOnlyTransformer(vocab_size, d_model, num_heads, num_layers, d_ff, max_seq_length)
+	
+	# Generate some dummy input data
+	input_data = torch.randint(0, vocab_size, (batch_size, seq_length))
+	
+	# Move the model and input data to GPU if available
+	device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+	model.to(device)
+	input_data = input_data.to(device)
+	
+	# Set the model to evaluation mode
+	model.eval()
+	
+	# Perform a forward pass
+	with torch.no_grad():
+	    output = model(input_data)
+	
+	# The output shape should be (batch_size, seq_length, vocab_size)
+	print(f"Output shape: {output.shape}")
+	
+	# If you want to get the most likely next token for each position:
+	next_token_logits = output[:, -1, :]  # Get the logits for the last token in each sequence
+	next_token_probs = F.softmax(next_token_logits, dim=-1)
+	next_token = torch.argmax(next_token_probs, dim=-1)
+	
+	print(f"Most likely next token for each sequence in the batch: {next_token}")
+	
+	# If you want to generate a sequence:
+	def generate_sequence(model, start_sequence, max_length):
+	    model.eval()
+	    with torch.no_grad():
+	        current_seq = start_sequence.clone()
+	        for _ in range(max_length - len(start_sequence)):
+	            output = model(current_seq)
+	            next_token_logits = output[:, -1, :]
+	            next_token_probs = F.softmax(next_token_logits, dim=-1)
+	            next_token = torch.argmax(next_token_probs, dim=-1)
+	            current_seq = torch.cat([current_seq, next_token.unsqueeze(0)], dim=1)
+	    return current_seq
+	
+	# Generate a sequence starting with the first 5 tokens of our input data
+	start_seq = input_data[:1, :5]  # Take the first sequence in the batch and its first 5 tokens
+	generated_seq = generate_sequence(model, start_seq, max_length=30)
+	print(f"Generated sequence: {generated_seq}")
+
+Which results in the following output: 
+
+  
+
+	 $ py3 models.py 
+	
+	Output shape: torch.Size([16, 20, 1000])
+	
+	Most likely next token for each sequence in the batch: tensor([332, 477, 224, 653, 471, 465, 691, 679, 169, 704, 574, 807, 708, 747,
+	
+	        740, 608])
+	
+	Generated sequence: tensor([[164, 532,  64, 438,  72, 465, 102, 523, 461, 245, 668, 246, 556, 998,
+	
+	         870, 579, 278,  62, 788, 618,  96, 534, 954, 953, 839, 594, 865, 628,
+	
+	         204, 184, 952, 604, 341, 462]])
+
+It generates something. Hooray!
