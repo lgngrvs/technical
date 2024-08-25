@@ -4,7 +4,7 @@ Seems like it's worthwhile just to figure out how to write a transformer from sc
 
 This isn't really a proper explainer, because I leave out most of the intuitions that I already have, say about what embeddings are and what they represent, and also just generally what certain components of the model actually do. This is an explainer that gets *me* from *where I started* to *where I ended*, and might not properly explain things at all. It's a third of the way from a notebook to a blog post, or something like that.
 
-the code for this repo is ==here== (haven't added link yet)
+The code for this post is accessible [here](https://github.com/lgngrvs/technical/blob/main/py/transformer-basic.py).
 
 
 
