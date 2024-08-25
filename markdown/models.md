@@ -209,7 +209,7 @@ When we `assert d_model % num_heads == 0`, we're confirming that the embedding s
 
 I was initially really thrown by the fact that these matrices are both $D \times D$ instead of $D \times d_k$ — but it turns out this is actually a really natural way to do this. Remember how we concatenate all the attention head outputs in order to use them with the $W^O$ matrix? We do something similar here — the `W_k` variable holds *all the $W^K$ matrices for all the attention heads in one, just concatenated together for easy reference.* Something like: $$\texttt{W\_q} = \text{Concatenate}(W^Q_0, W^Q_1, \: \: ..., W^Q_N)$$and likewise for `W_k`, `W_v`, and `W_o`.
 
-We will use methods in the `forward()` function to split these apart into each head's specific weights and use them. This way is cool because we can do so with no looping and no extra variables — all the weights stay in one matrix, and we just index that matrix to access each head's individual weights.
+We will use methods in the `forward()` function to split these apart into each head's specific weights and use them. This way is cool because we can do so with no looping and no extra variables — all the weights stay in one tensor, and we just index that tensor to access each head's individual weights. Note, though, that when we are "splitting" it apart, all we're doing is actually just reshaping the tensor's dimensions, as you'll see in a moment.
 
 Now, for the forward function:
 
@@ -223,5 +223,116 @@ Now, for the forward function:
         output = self.scaled_dot_product_attention(Q, K, V, mask)
         output = output.transpose(1,2).contiguous().view(batch_size, -1, self.d_model)
 
+Let me try and summarize what happens (using $N$ for seq length and $D$ for d_model, and assuming we're working with batch size 1 during inference). I'll focus on the query matrix for now:
 
-I think the notion of batches is pretty important here. 
+1. First, we apply `W_q` to the residual stream to get a matrix consisting of $H$ matrices of size $N \times d_k$ , all together in one tensor of shape $1 \times N \times D$.  These are the $Q$ matrices for each head: `Q = self.W_q(query)`
+2. Then we reshape it into a tensor of shape $1 \times N \times H \times d_k$ from $1 \times N \times D$: `.view(batch_size, -1, self.num_heads, self.d_k)`. Since $d_k = D/H$ that's just looking at the single $N \times D$  matrix as $H$ matrices of dimensions $N \times d_k$.
+3. Swaps the sequence length and num_heads dimensions (presumably so that the gpu will parallelize it correctly): `.transpose(1,2)`
+4. Computes the operations separately in parallel for each head: `output = self.scaled_dot_product_attention(Q, K, V, mask)`
+5. Concatenates the results via `.transpose(1, 2).contiguous().view(batch_size, -1, self.d_model)`, thereby returning to shape 1 x $N$ x $D$ (-1 in the view operation is inferring the sequence length)
+6. Applies W_o to those concatenated results: `return self.W_o(output)`
+
+This took a ton of back and forth with Claude to figure out, but I *think* this is accurate. (And so does this iteration of Claude, at least.)
+
+Now, for the actual individual heads' computations: 
+
+    def scaled_dot_product_attention(self, Q, K, V, mask=None):
+        attn_scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.d_k)
+        if mask is not None:
+            attn_scores = attn_scores.masked_fill(mask == 0, -1e9)
+        attn_probs = torch.softmax(attn_scores, dim=-1)
+        output = torch.matmul(attn_probs, V)
+        return output
+
+First we have the `torch.matmul` — just a straight up matrix multiplication, though we need to do the transpose operation that I mentioned earlier so that we get $QK^\top$ instead of $QK$. We save this computation in attention scores. If masking is available, we apply the masking (setting the values that are masked to a very large negative number, `-1e9`). 
+
+Then we apply the softmax to the scores to make them nice weights, and then we multiply all that by the $V$ matrix to get our output.
+
+**Woohoo!! We understand attention!!!**
+
+All we have left to do now is the positional encoding and the feed-forward networks.
+
+	class PositionalEncoding(nn.Module):
+	    def __init__(self, d_model, max_seq_length):
+	        super(PositionalEncoding, self).__init__()
+	        
+	        pe = torch.zeros(max_seq_length, d_model)
+	        position = torch.arange(0, max_seq_length, dtype=torch.float).unsqueeze(1)
+	        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+	        
+	        pe[:, 0::2] = torch.sin(position * div_term)
+	        pe[:, 1::2] = torch.cos(position * div_term)
+	        
+	        pe = pe.unsqueeze(0).transpose(0, 1)
+	        self.register_buffer('pe', pe)
+	        
+	    def forward(self, x):
+	        return x + self.pe[:x.size(0), :]
+
+Positional embeddings are unexpectedly very cool.
+
+One naive notion of how you might do it would be, "just create an array of integers from 1 to seq_length and stick it into a new row at the bottom of your input token sequence." There are various drawbacks to this: 
+
+- Doesn't scale well (Inconsistent gradient values relating to positional encodings between small and large values during backprop, so patterns might become wonky/be harder to learn)
+- Might not generalize well (e.g. if trained on sequences up to 100, it might not generalize to length 1,000 because it's never seen that)
+- Computationally inefficient — adds an extra row to every matrix for kind of no reason, costly when you have $O(n^2)$ attention
+
+Idk, just in general this doesn't feel like a natural solution to me. The rest of the embedding space is related to meaning or something; sticking on a direction for position feels... random? I think this is uninformed vibes and aesthetics though, not actual meaningful ML intuition. In any case, nobody uses this.
+
+Okay, fine. What if we embed the position by giving each row/dimension in the embedding vectors a binary place value; if you have a 6-dimensional vector, you would have, an encoding up to 6 digits (e.g. `001010`). This way you don't have to create a whole new dimension, and it seems more nicely patterned than simple integer encoding — the network might have an easier time learning it? This has its own drawbacks:
+
+- Abrupt transitions between numbers: 7 (`0111`) and 8 (`1000`) have no bits in common, so this pattern seems more difficult to learn
+- Limited to $2^D$ values (unnecessarily puts a hard cap on sequence length)
+
+There seem to be various other reasons that I don't really get intuitively yet, but either way, this is just not "how it's done." 
+
+How it's actually done is using *sinusoidal encoding.* [This video](https://www.youtube.com/watch?v=T3OT8kqoqjc) provides a pretty good visual explanation, which helped me get a basic grasp quickly.
+
+I'll quote briefly from the original paper, with slightly adjusted notation:
+
+> In this work, we use sine and cosine functions of different frequencies: 
+> $$PE_{(\text{pos},2i)} = \sin(\frac{\text{pos}}{10000^{2i/D}})$$$$PE_{(\text{pos},2i+1)} = \cos(\frac{\text{pos}}{10000^{2i/D}})$$
+> where $\text{pos}$ is the position and $i$ is the dimension. That is, each dimension of the positional encoding corresponds to a sinusoid. The wavelengths form a geometric progression from $2π$ to $10000 · 2π$.
+
+And here's the graphic from the YouTube video above, in case you didn't watch it (really, you should I think): 
+
+![sinusoidal_encoding.png](sinusoidal_encoding.png)
+
+Each dimension in the embedding space is assigned a function, either a sin function if it's an even index or a cosine function if it's an odd index. As you continue down the vector's dimensions ("features" if you must) the periods of these functions get longer and longer. For example, the 2nd-indexed dimension in a model with `d_model = 64` model will get $$\sin(\frac{\text{pos}}{10000^{2/64}}) \approx \sin(\frac{\text{pos}}{1.3335})$$
+But we don't want to calculate this directly, because using large powers would potentially cause numerical instability (a catchall for problems with overflow, underflow, [catastrophic cancellation](https://en.wikipedia.org/wiki/Catastrophic_cancellation), etc.) so instead we do it in terms of logs, using the following transformation: 
+
+$$10000^{2i/D} = e^{\ln(10000^{2i/D})} = e^{(2i/D) \cdot \ln(10000)}$$
+
+Here's the code: 
+
+		pe = torch.zeros(max_seq_length, d_model)
+	    div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+
+What we do here is we first create an empty (all zeros) tensor with the dimensionality of the max input sequence's embeddings, which we'll fill with numbers as we go.
+
+Then we generate a tensor `[0, 2, 4, ..., d_model - 2]` using torch.arange() and then turn it into floating point numbers. We scale each number in this tensor by $-\frac{\ln(10000)}{D}$ (since `math.log` defaults to using base $e$ and calculating the natural log),  and finally raise all of that to the power of $e$ with `torch.exp`, leaving us with $$[0,2,4,...,D-2] \cdot\frac{1}{e^{\ln(10000)/D}}$$
+. After this it's pretty much smooth sailing; we create a tensor corresponding to each position in the input sequence, then turn it from a 1d tensor to a 2d, single-column tensor using `unsqueeze`: 
+
+		position = torch.arange(0, max_seq_length, dtype=torch.float).unsqueeze(1)
+
+Lastly, we fill the indices of that empty tensor we made earlier using the calculations we just prepared: 
+
+	pe[:, 0::2] = torch.sin(position * div_term)
+	pe[:, 1::2] = torch.cos(position * div_term)
+
+Then we reshape the pe tensor and register it as a "buffer," which is a kind of data that is saved in the model and not updated during training: 
+
+	pe = pe.unsqueeze(0).transpose(0, 1)
+	self.register_buffer('pe', pe)
+
+and then define a hyper-simple forward pass that adds the positional encodings (up to the length of the input) to the input embeddings.
+
+	pe = pe.unsqueeze(0).transpose(0, 1)
+	self.register_buffer('pe', pe)
+
+
+TODO
+- explain the code for positional embeddings slightly better (mainly the shape stuff)
+- implement MLP
+- make the code actually run
+	- define a training method I guess :flushed:

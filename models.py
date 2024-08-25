@@ -2,10 +2,6 @@ import torch
 import torch.nn as nn
 import math
 
-import torch
-import torch.nn as nn
-import math
-
 class DecoderOnlyTransformer(nn.Module):
     def __init__(self, vocab_size, d_model, num_heads, num_layers, d_ff, max_seq_length):
         super(DecoderOnlyTransformer, self).__init__()
