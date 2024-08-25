@@ -40,7 +40,7 @@ code {
 
 	/*background-color: black;
 	color: white;*/
-	border-radius: 0.25em;
+	border-radius: 0.5em;
 	font-size: 11pt;
 
 }
@@ -52,5 +52,7 @@ pre {
 	border-radius: 0.25em;
 	padding: 1ch;
 	overflow: scroll;
+	font-size: 11pt;
+	box-shadow: 2px 5px 5px lightgray;
 
 }
