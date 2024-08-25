@@ -69,7 +69,7 @@ We're gonna use PyTorch's `nn` module for this. We can implement everything rela
 
 The line which I'll explain is the `super(DecoderOnlyTransformer, self).__init__()`. We need this because we're importing the `nn.Module` parent class, and we need to initialize the methods that come with it. 
 
-Okay! That's the whole top-level architecture. Now we just need to define the components we used — `PositionalEncoding`, `PositionalEncoding`, `MultiHeadAttention`, and `PositionwiseFeedForward`.
+Okay! That's the whole top-level architecture. Now we just need to define the components we used — `PositionalEncoding`, `MultiHeadAttention`, and `PositionwiseFeedForward`.
 
 Now for `DecoderLayer`. We want it to have self-attention, normalization, feedforward, normalization — this is the classic shape of a transformer block. We define the `init` pretty much intuitively — holding `MultiHeadAttention` and `PositionwiseFeedForward` methods to be implemented later — save for the `super` which just tells the model to init some of the methods contained in the Pytorch library for neural network modules, so we don't have to do all the annoying work of defining i/o stuff and vector stuff ourselves.
 
@@ -128,6 +128,7 @@ Okay, I'm not gonna lie, I'm pretty confused about what's happening here. I don'
 ### How MHSA works
 
 Sources: 
+
 - [The Transformer Attention Mechanism](https://machinelearningmastery.com/the-transformer-attention-mechanism/) (for reference)
 - [Attention is all you need](https://arxiv.org/pdf/1706.03762), the original paper (for notation and reference, though note that this paper describes an encoder-decoder transformer, not the decoder-only transformer we're describing.)
 - [3Blue1Brown's attention video](https://www.youtube.com/watch?v=eMlx5fFNoYc) (for intuitions and review on $V$ matrices)

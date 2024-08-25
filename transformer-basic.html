@@ -69,7 +69,7 @@
 </pre></div>
 
 <p>The line which I'll explain is the <code>super(DecoderOnlyTransformer, self).__init__()</code>. We need this because we're importing the <code>nn.Module</code> parent class, and we need to initialize the methods that come with it. </p>
-<p>Okay! That's the whole top-level architecture. Now we just need to define the components we used — <code>PositionalEncoding</code>, <code>PositionalEncoding</code>, <code>MultiHeadAttention</code>, and <code>PositionwiseFeedForward</code>.</p>
+<p>Okay! That's the whole top-level architecture. Now we just need to define the components we used — <code>PositionalEncoding</code>, <code>MultiHeadAttention</code>, and <code>PositionwiseFeedForward</code>.</p>
 <p>Now for <code>DecoderLayer</code>. We want it to have self-attention, normalization, feedforward, normalization — this is the classic shape of a transformer block. We define the <code>init</code> pretty much intuitively — holding <code>MultiHeadAttention</code> and <code>PositionwiseFeedForward</code> methods to be implemented later — save for the <code>super</code> which just tells the model to init some of the methods contained in the Pytorch library for neural network modules, so we don't have to do all the annoying work of defining i/o stuff and vector stuff ourselves.</p>
 <div class="bw"><pre><span></span><span class="k">class</span> <span class="nc">DecoderLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span> 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">num_heads</span><span class="p">,</span> <span class="n">d_ff</span><span class="p">):</span>
@@ -123,12 +123,14 @@
 
 <p>Okay, I'm not gonna lie, I'm pretty confused about what's happening here. I don't think "halfway there" was quite correct.</p>
 <h3>How MHSA works</h3>
-<p>Sources: 
-- <a href="https://machinelearningmastery.com/the-transformer-attention-mechanism/">The Transformer Attention Mechanism</a> (for reference)
-- <a href="https://arxiv.org/pdf/1706.03762">Attention is all you need</a>, the original paper (for notation and reference, though note that this paper describes an encoder-decoder transformer, not the decoder-only transformer we're describing.)
-- <a href="https://www.youtube.com/watch?v=eMlx5fFNoYc">3Blue1Brown's attention video</a> (for intuitions and review on $V$ matrices)
-- LLMs (mostly this; asking questions based on preexisting knowledge)
-- My own preexisting knowledge</p>
+<p>Sources: </p>
+<ul>
+<li><a href="https://machinelearningmastery.com/the-transformer-attention-mechanism/">The Transformer Attention Mechanism</a> (for reference)</li>
+<li><a href="https://arxiv.org/pdf/1706.03762">Attention is all you need</a>, the original paper (for notation and reference, though note that this paper describes an encoder-decoder transformer, not the decoder-only transformer we're describing.)</li>
+<li><a href="https://www.youtube.com/watch?v=eMlx5fFNoYc">3Blue1Brown's attention video</a> (for intuitions and review on $V$ matrices)</li>
+<li>LLMs (mostly this; asking questions based on preexisting knowledge)</li>
+<li>My own preexisting knowledge</li>
+</ul>
 <p>Each self-attention head <em>projects</em> the entire residual stream down into a smaller space. The projection matrices are linear transformations that take this larger embedding and compress it into the smaller space, potentially emphasizing specific features as this happens:
 $$\text{head}_i = \text{Attention}(QW^Q_i,KW^K_i,VW^V_i).$$
 where the $W$ matrices are learned projection matrices. In our case for this basic transformer, the original $Q$, $K$, and $V$ matrices that we're passing in are literally just the residual stream, aka <code>x</code>. The residual stream has shape $N \times D$, where $N$ is the input sequence length and $D$ is the is the embedding size we set for the model, aka <code>d_model</code>; each head uses its own $W$ matrices to project the residual stream down into smaller dimensions, specifically for the $Q$ and $K$ matrices, $N \times \frac{D}{H}$, where $H$ is the number of heads, aka <code>num_heads</code>. </p>
