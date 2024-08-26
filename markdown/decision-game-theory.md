@@ -280,7 +280,7 @@ okay im bored
 
 If we want to do better than Defect-Defect in the classic prisoner's dilemma -- where you're in two different rooms, you'll need *acausal trades*. Maybe. Maybe there are other ways to do this or something that aren't absurd, but this one's kind of interesting and fun.
 
-
+--- 
 
 ## Game theory with computers
 
@@ -315,6 +315,10 @@ Seemingly this goes infinitely, and since we have bounded things at length `k` t
 Actually this is not the case. There's some interesting math around provability that shows us why, called **Lob's theorem**. Using Lob's theorem, we can create "robust cooperative program equilibria for computationally bounded agents" -- this means unexploitable agents in this computer-based prisoner's dilemma game.
 
 The statement "$\Box_{k} p$" means, "$p$ has a proof of $k$ or fewer characters."
+
+--- 
+
+## predictive processing and active inference
 
 
 [^1]: As is always the case.

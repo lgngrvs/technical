@@ -1,13 +1,9 @@
-# Information theory and mathematical statistics
+# Information theory
 
 ### What actually is information lol 
 It's been described to me as, "information resolves uncertainty." I think the best way to get a sense for it is talking about surprisal with regards to a specific thing.
 
-**Scenario 1.1**
-
 You come to a fork in the road and you have no ideas about which way might be the correct way to go. We can represent them as paths $A$ and $B$. A natural way to represent this is with binary labels, hence it would be instead path $0$ for $A$ and path $1$ for $B$. Intuitively, if someone perfectly trustworthy tells you which way to go, they would be be giving you 1 bit (binary digit) of information: they're giving you a 0 or 1 to distinguish the options in the binary choice. 
-
-**Scenario 1.2**
 
 What if you do have some information preceding this, though? What if you have 70% confidence that path $A$ is correct, since someone earlier on the road who seemed somewhat trustworthy told you it was? They wouldn't be giving you still 1 bit of information, because you'd be updating less — you're less surprised. You already thought this was the case, they're just upgrading your confidence. No longer can we work with simple integers of bits; we realize from this that the amount of information you get is directly related to how much knowledge you already have — or don't have.
 
@@ -22,11 +18,7 @@ I'll talk about how to measure error and surprise soon, but for now I want to fi
 ### Two incorrect intuitions
 I'll start with two ways that you might naturally think about information as a mathematical object, and why those ways lead you to computational problems.
 
-**Scenario 2.1**
-
 From the 70%/30% situation above, you might think that the person on the path would be giving you 0.3 bits of information, thus making up for the difference in the outcomes. (This would be incorrectly applying intuitions that "probabilities should sum to 1.") If you think about this more deeply, though, the math doesn't work out; distinguishing between two perfectly uncertain options — events that have priors of 0.5 each — would only give you 0.5 bits of information, as opposed to the 1 bit we would expect. Shouldn't someone revealing to you a bit — a zero or a one, a binary choice — give you one bit of information, if you have literally no idea what that bit might be?
-
-**Scenario 2.2**
 
 Here's another way that "adding to 1" doesn't work out nicely: if you have two fair coins and you flip them both separately, each coin flip would theoretically give you 0.5 bits of information. However, if you looked at it from the perspective of their joint probability distribution — for example, $P(\text{2 heads}) = 0.5 \* 0.5 =  0.25$ — we would get 0.75 bits of information instead. This just straightforwardly doesn't work out. Two independent events should not give different amounts information just based on whether you look at their probabilities together or separately — but we just saw that happen! We have to keep looking.
 
@@ -35,8 +27,6 @@ Okay, so information for an event $x$ can't just be $1-P(x)$. What else could it
 If we think about it, the information we get is quantifying *how wrong we are.* If event $x$ happens and we predicted it with very high confidence, the amount of information should be really low — we expected it, and aren't very surprised. But conversely, if we predicted $x$ with really low confidence, the amount of information should be very large — and it should scale with orders of magnitude. If our $P(x) = 10\%$ and $x$ occurs, this should be very very different from if our $P(x) = 0.1\%$ — orders of magnitude different. So maybe we could say information is proportional to $1/P(x)$? 
 
 That's *almost* right, but we're still missing something. 
-
-**Scenario 3.1**
 
 To see what's wrong let's imagine two fair dice. The probability of rolling a one on die $A$ is $1/6$; for $B$ it's also $1/6$. If we use $1/P(x)$, and look at the dice independently, seeing snake eyes — two ones — (or any other outcome for that matter) would give us $6 + 6 = 12$ bits. But if we once again consider the joint probability distribution, and ask what the probability of rolling snake eyes is, that probability is $1/6 \cdot 1/6 = 1/32$ — so if we once again rolled snake eyes, we'd get 32 bits of information instead of 12! 
 
@@ -280,7 +270,12 @@ There we go! There's our entropy. :)
 
 Now, the formalization and proof of this theorem requires a lot more concepts than we currently have — we need mutual information, conditional entropy, and ideas about communication channels and channel capacity. 
 
-*TODO: add formalization using mutual information, channel capacity, conditional entropy* (eventually this will cover everything in the wikipedia hopefully)
+#### Formalizing the source coding theorem
+
+*TODO: add formalization using mutual information, channel capacity, conditional entropy* (eventually this will cover everything in the wikipedia hopefully), Kraft inequality, gibbs inequality, etc.
+
+
+#### Why this coding theorem isn't enough
 
 There's a glaring weakness to this theorem's applicability, though: it can only talk about strings generated from probabilistic distributions! One of the key insights that I've taken away from learning about applications of information theory to computer science has been that **randomness is incompressibility.** We saw this above: a uniform distribution was *more random* than the unfair die that Anansi gave us; it had higher entropy. I think this insight points us further towards the limitations of Shannon's theorem.
 
@@ -301,6 +296,7 @@ I'm drawing here from three main sources:
 - Wikipedia ([Algorithmic Information Theory](https://en.wikipedia.org/wiki/Algorithmic_information_theory) and [Kolmogorov Complexity](https://en.wikipedia.org/wiki/Kolmogorov_complexity))
 - *Kolmogorov Complexity and Algorithmic Randomness* by Shen, Uspensky, and Vereshchagin (ISBN 978-1-4704-7064-7)
 - And of course, LLMs for helping me orient myself and clarify the above.
+- [An Intuitive Explanation of Solomonoff Induction](https://www.lesswrong.com/posts/Kyc5dFDzBg4WccrbK/an-intuitive-explanation-of-solomonoff-induction)
 
 The first notion to define is **Kolmogorov Complexity**, abbreviated below as **K-complexity**, and (from Wikipedia) "also known as algorithmic complexity, Solomonoff–Kolmogorov–Chaitin complexity, program-size complexity, descriptive complexity, or algorithmic entropy" along with the other 93 names of god. Heuristically or something, we should think that this is an important concept because it has so many names. Going into it, though, keep in mind one of its names: *algorithmic entropy*. The fact that this is another measure of entropy, a different way of looking at a similar fundamental idea, should maybe sit in the back of your mind as we proceed.
 
@@ -314,7 +310,7 @@ The decompressor can also be called a "description mode" or "description languag
 
 To make this a little more formal, we can use a different description mode: Python, instead of natural language. The string `print("01" * 10)` when run by a python interpreter outputs our string, `01010101010101010101`. Hence, Python is our 'description mode'; when we evaluate $x$ (our program) with $D$ (our description mode) we get $y$ (our desired string).
 
-Hence why it's a "description mode" — the decompressor is *a way of turning the description into the thing being described*. Every description has meaning only in the context of a description mode — without a description mode, there are no rules given to allow the description to "make sense". There need to be formally-defined rules to evaluate the description (otherwise you could just make up a random string and say it was a perfect description for any other string). 
+Hence why it's a "description mode" — the decompressor is *a way of turning the description into the thing being described*. Every description has meaning only in the context of a description mode — without a description mode, there are no rules given to allow the description to "make sense". There need to be formally-defined rules to evaluate the description (otherwise you could just make up a random string and say it was a perfect description for any other string). So, to be clear, while I used the natural language example above, you couldn't just use that as a description mode straightforwardly; **a description mode must be a computable function.**
 
 The K-complexity of a string $y$ with respect to a specific description mode $D$ is the length of the string's shortest description ($x$). Formally:
 
@@ -323,12 +319,121 @@ Where $l(x)$ denotes the length of $x$. (notation used by the authors; I used $\
 
 (There is a lot of random notation used for K-complexity, so to be honest this is fitting. The book uses the above $C_D$ and it feels nice and intuitive to me — complexity with respect to the description mode D — so I'll go with that. You might also see for example $K(x)$ (for Kolmogorov) or $H(x)$, reusing the notation for entropy since this is algorithmic entropy — both of these were used by Kolmogorov himself. To quote the authors: "Unfortunately, the notation and terminology related to Kolmogorov complexity is not very logical (and different people often use different notation). Even the same authors use different notation in different papers" (*xii*).) 
 
-Typically we'll place formal limitations on what our $D$ can be. To make things nice we'll say that $D$ is a function that takes a binary string and outputs a binary string (since we can encode all strings as a binary string, usually trivially). One way to notate this is to say $\Xi = \{0,1\}^{*}$ (i.e. $\Xi$, Xi, represents the set of all binary strings), and to say define $D$ as $$ D: \Xi → \Xi$$
-There are more details given by computability theory which we could go into an infinite rabbit hole describing, but I'll leave that there for now.
+Typically we'll place formal limitations on what our $D$ can be. To make things nice we'll say that $D$ is a function that takes a binary string and outputs a binary string (since we can encode all strings as a binary string, usually trivially). One way to notate this is to say $\Xi = \{0,1\}^{*}$ (i.e. $\Xi$, Xi, represents the set of all binary strings), and to, say, define $D$ as $D: \Xi → \Xi$ There are more details given by computability theory which we could go into an infinite rabbit hole describing, but I'll leave that there for now.
 
-*Why can't you just make up a description mode and hide all the complexity in that?*
+One question that this definition left me with was, *why can't you just make up a description mode and hide all the complexity in that?* Then you could have a program with length 0 that deterministically produces your desired output, and this notion becomes kind of useless. We can't answer this now, but we'll be able to in a moment.
+
+## A universal decompressor
+
+We say that a decompressor/description mode $D_1$ is not worse than another $D_2$ if its output for all strings $x$ differs only by a constant, $c$. Written formally, $D_1$ is not worse than $D_2$ if 
+$$C_{D_1}(x) \leq C_{D_2}(x)+ c.$$
+**Theorem**. There is a description mode $D$ that is not worse than any other one: for every description mode $D'$ there is a constant c such that $$C_D(x) \leq C_{D'}(x)+ c$$ for every string x. This constant $c$ might be different for every $D'$, but it will still be a constant. (Spoiler: this is a universal turing machine.)
+<p style="text-align: center">. . .</p>
+**Brief interlude: Big-O notation**
+
+(sources: [stack overflow](https://stackoverflow.com/questions/1909307/what-does-on-mean), [Rob Bell](https://robbell.io/2009/06/a-beginners-guide-to-big-o-notation))
+
+We use Big-O notation to relate the length of computation to the size of the input.
+
+- $\mathcal{O}(1)$ means it takes a constant amount of time to compute an output. 
+- $\mathcal{O}(n)$ means it takes an amount of time proportional to the number of items/size in the input
+- $\mathcal{O}(n^2)$ means it takes an amount of time proportional to the *square* of the items — e.g. an algorithm that computes something for each item in a list relative to each other item (like self-attention).
+- $\mathcal{O}(n \log n)$ [might be e.g. binary search](https://robbell.io/2009/06/a-beginners-guide-to-big-o-notation).
+
+This is describing the *worst case* — it's an upper bound on the function.(Hopefully this is correct. the stack overflow answer + [wikipedia page](https://en.wikipedia.org/wiki/Big_O_notation) indicate that there are lots of other notations but I don't really care about them right now.)
+<p style="text-align: center">. . .</p>
+I think the idea behind "bounded by a constant" is related ish to the vibes of Big-O notation. The constant can be very large, but it will be a constant. If your algorithm is highly complex (like $\mathcal{O}(2^{n^n})$ or something, I don't know, I'm making this up) this constant can be in a sense "negligible." Quoting the authors: 
+
+> One could say that such a tolerance makes the complexity notion practically useless, as the constant $c$ can be very large. However, nobody managed to get any reasonable theory that overcomes this difficulty and defines complexity with better precision.
+
+Anyway, the way we set up a proof for this theorem is just by prefixing any string we input with a binary form of the algorithm we use to decompress it normally. Literally we just use
+$$D(Py)=P(y)$$ where $Py$ is just the program $P$ (a description mode used to evaluate $y$). Since description modes are computable functions, we must be able to encode them on the tape. An important note here though is that $P$ must be **self-delimiting**, i.e. we must be able to tell unambiguously where $P$ ends and $y$ begins. This is not obviously the case for all algorithms; programs written in Python, for example, are not self-delimiting; there's no end marker in the programs. You can add comments of arbitrary length that don't affect the program's execution at the end. You can think of it this way: if you concatenate two Python files, it's not always going to be clear where one ends and the next begins.
+
+We can make any $P$ self-delimiting, though, relatively trivially: you take its binary form, double every bit (e.g. `010011` becomes `001100001111`) and then append the digits `01` at the end. This way, you can simply evaluate the doubled digits in bit-pairs; each bit-pair will either be `00` or `11` and then when you encounter the bit-pair `01` you know that $P$ has ended and $y$ is beginning. 
+
+Anyway, if we set up this description mode $D$ that just evaluates $Py$ for any $P$ and any $y$, we can say that if $y$ is the shortest description of $x$ (a string) with respect to $P$, $Py$ is also a description of $x$ with respect to $D$. 
+
+The shortest description of $x$ with respect to $D$ is at *most* $Py$ (there may or may not exist some shorter description), and hence the shortest description of $x$ with respect to $D$ is *at most* longer, by the length of $P$, than the shortest description of $x$ with respect to $P$. Formally: $$ C_D(x) \leq C_P(x) + l(P).$$where $l(P)$ is the length of our encoding of $P$ in binary (which may be altered from some original $P$ such that it is self-delimiting or whatever, in which case this might look something like $2\cdot l(P_{\text{original}}) + 1$, but in which case it would be linear so it doesn't really matter). 
+
+Hence, $D$ is a "universal decompressor" or "**universal algorithm**": it is "not worse" than any other decompressor. We say that this description mode $D$ is *optimal*. 
+
+Now we can answer the question from earlier: *why can't you just make up a description mode and hide all the complexity in that?* Well, *you can*. But it doesn't make K-complexity trivial, because when you're comparing this description you just made up to others using this optimal algorithm, *the description mode is encoded in the string too!* 
+
+## Turing machines and Solomonoff induction 
+
+This whole time we've been secretly working with **Turing machines**. Turing machines provide a neat way to formalize the notion of "algorithm," which I'll talk about now. 
+
+In principle, all information can be represented as a single binary sequence. It might be very long, very complex, very confusing, but *in principle*, anything that we can describe mathematically — from neuron cells to sound waves to physical particles — can be represented as a binary sequence. If we assume that the universe is actually a deterministic process (I mean, maybe a big assumption) then the entire universe could be represented as a binary string.
+
+Turing machines are extremely simple, formal computers that operate on binary strings. You can think of it as a little machine sitting on a tape of infinite length; it can read a single binary character at a time, write a single character at a time, and move left or right one character at a time. 
+### Formalizing Turing machines
+
+We can formalize it with this absolutely unhinged notation: $$ M = \langle Q, \Gamma, b, \Sigma, \delta, q_0, F \rangle.$$(which I got from Wikipedia, obviously. Note that there are many different ways to formalize the Turing machine, but they all are isomorphic.)
+
+-  $\Gamma$ (Gamma) is the finite alphabet of symbols you can put on the tape, among them $b$, the blank symbol — this is what's on the tape before it's written as 0 or 1, and since the tape is infinite, this symbol occurs infinitely — and $\Sigma$, the set of input symbols (here 0 and 1).
+ - $Q$ is the finite (and non-empty) set of states that the machine can be in, among them $q_0$, the initial state, and $F$, the set of of acceptable final states.
+ - $\delta$ is the "transition function" of the Turing machine: $$\delta: (Q \setminus F) \times \Gamma  \rightharpoonup Q\times \Gamma \times \{L,R\}$$It takes inputs of $(Q \setminus F) \times \Gamma$ (i.e. it takes in tuples, one item being from the set $Q$ excluding the set of final states $F$, and the other being from $\Gamma$) — in other words, it knows its current state and the character that it's reading from the tape — and its output is $Q \times \Gamma \times \{L, R\}$, i.e. it specifies in its output (1) the next state the machine will be in, (2) what character to overwrite onto the current character it's reading, and (3) the next movement, either one to the right or one to the left. This function seems to be usually defined by a "state table" for simpler machines. I don't know what it looks like for more complex machines — or if that's the only way to define it.
+
+*Little note since I wondered what this meant:* Wikipedia describes this as a "partial function". A partial function from set $X$ to set $Y$ just maps a *subset* of $X$ onto the whole of $Y$. $\delta$ is a partial function because it only uses a subset of $Q$ as an input. (full definition reiterated just because I still feel fancy using kinda obscure latex symbols)
+
+Wikipedia has lots of other good stuff about Turing machines. For example: 
+
+> In the words of van Emde Boas (1990), p. 6: "The set-theoretical object [his formal seven-tuple description similar to the above] provides only partial information on how the machine will behave and what its computations will look like."
+> 
+> For instance,
+> 
+> - There will need to be many decisions on what the symbols actually look like, and a failproof way of reading and writing symbols indefinitely.
+> - The shift left and shift right operations may shift the tape head across the tape, but when actually building a Turing machine it is more practical to make the tape slide back and forth under the head instead.
+> - The tape can be finite, and automatically extended with blanks as needed (which is closest to the mathematical definition), but it is more common to think of it as stretching infinitely at one or both ends and being pre-filled with blanks except on the explicitly given finite fragment the tape head is on (this is, of course, not implementable in practice). The tape _cannot_ be fixed in length, since that would not correspond to the given definition and would seriously limit the range of computations the machine can perform to those of a [linear bounded automaton](https://en.wikipedia.org/wiki/Linear_bounded_automaton "Linear bounded automaton") if the tape was proportional to the input size, or [finite-state machine](https://en.wikipedia.org/wiki/Finite-state_machine "Finite-state machine") if it was strictly fixed-length.
+
+They also have a [list of examples of Turing machines](https://en.wikipedia.org/wiki/Turing_machine_examples). The one they provide in the article is clear and good though:
+
+![busybeaverturing.png](busybeaverturing.png)
+
+### Turing machines formalize the notion of "algorithm"
+
+Every other way we've tried to formalize the idea of an "algorithm" has been either equivalent to or weaker than a Turing machine; weaker formalizations include finite-state machines and pushdown automata — I don't currently understand why these are weaker, but it's not a priority for me to understand this statement in particular at the moment so I'll put it on the backburner — and some equivalent formalizations include Alonzo Church's Lambda Calculus, some Cellular automata (such as [Rule 110](https://en.wikipedia.org/wiki/Rule_110) and Conway's [Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life), both of which can simulate a Turing machine). Something that is **Turing-complete** can simulate a Turing machine. 
+
+The three most promising approaches to formal computability — lambda calculus ($\lambda$-calculus), Turing machines, and general recursion (not sure what that is but everyone says it's important) — turned out to all be equivalent, and since subsequent attempts have been either equivalent or worse, this gave rise to the **Church-Turing Thesis:** that a function on the natural numbers is "effectively calculable" iff it is computable by a Turing machine. 
+
+Effectively calculable is just a way of saying "something you can calculate, with some intuitive sense of the word 'calculate'". Here's how Turing explains the term: 
+
+> We shall use the expression "computable function" to mean a function calculable by a machine, and let "effectively calculable" refer to the intuitive idea without particular identification with any one of these definitions.
+> ([Wikipedia](https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis#Statement_in_Church's_and_Turing's_words), apparently from Turing's PhD thesis)
+
+It's something like, "effectively calculable means that a human could do it with pen and paper and a simple set of algorithms given infinite time, attention, food, etc." So basically, the idea is that any computation that can be... actually *done* in some sense can be done by a Turing machine (though not necessarily one that we actually build, because the machine might be too big to fit in the universe or something). Note again that the Church-Turing thesis is a conjecture: it has not been proven. I'm not sure what a proof would even look like, though to be fair that's probably the case for many provable things that haven't been proven yet.)
+
+To reiterate one last time: 
+
+> Remember how limited the states of a Turing machine are; every machine has only a finite number of states with “if” rules like in the figure above. But somehow, using these and the tape as memory, they can simulate every set of rules, every algorithm ever thought up. Even the distinctively different theory of quantum computers is at most Turing complete. In the 80 years since Turing’s paper, no superior systems have been found. The idea that Turing machines truly capture the idea of “algorithm” is called the Church-Turing thesis.
+> ([LessWrong](https://www.lesswrong.com/posts/Kyc5dFDzBg4WccrbK/an-intuitive-explanation-of-solomonoff-induction))
+
+There are some cool things on the [Hypercomputation](https://en.wikipedia.org/wiki/Hypercomputation) Wikipedia page, which I'd recommend checking out. Eventually I'd want to go down that rabbit hole, but for now I will leave that and return to Solomonoff and Kolmogorov.
+
+Anyway, Turing proved that there's one specific Turing machine that can simulate all other Turing machines: the "universal Turing machine." To make it simulate all the other machines, all you need to do is give it the *compiler* — funny that I didn't actually know this word before, but a compiler is a program that translates code between a source language and a target language, usually between a high-level language and a low-level language, but can be between any language — that translates between whatever machine the universal Turing machine is simulating, and the universal Turing machine itself. You just prepend it to the input — you give the universal Turing machine the compiler, then the input. 
+
+Sound familiar? I think this is isomorphic, conceptually, to our optimal description mode we proved the existence of earlier. 
+
+**The Turing machine takes binary sequences as input, and leaves behind a different binary sequence as output.**
 
 
+
+
+
+
+
+- formal turing machines
+- how do turing machines actually work
+- use the solmonoff induction post, then church-turing thesis, and then take the wikipedia definition and maybe some other things
+- the halting problem
+- lambda calculus
+- computability theory
+- how are weaker formalizations of "algorithm" weaker
+- https://en.wikipedia.org/wiki/Hypercomputation — wtf? [chiatin's constant](https://en.wikipedia.org/wiki/Chaitin%27s_constant)
+	- just stuff that https://en.wikipedia.org/wiki/Gregory_Chaitin has wokred on
+	- He is today interested in questions of [metabiology](https://en.wikipedia.org/w/index.php?title=Metabiology&action=edit&redlink=1 "Metabiology (page does not exist)") and [information-theoretic](https://en.wikipedia.org/wiki/Information_theory "Information theory") formalizations of the theory of [evolution](https://en.wikipedia.org/wiki/Evolution "Evolution"), and is a member of the Institute for Advanced Studies at [Mohammed VI Polytechnic University](https://en.wikipedia.org/wiki/Mohammed_VI_Polytechnic_University "Mohammed VI Polytechnic University").
+	- Chaitin claims that [algorithmic information theory](https://en.wikipedia.org/wiki/Algorithmic_information_theory "Algorithmic information theory") is the key to solving problems in the field of [biology](https://en.wikipedia.org/wiki/Biology "Biology") (obtaining a formal definition of 'life', its origin and [evolution](https://en.wikipedia.org/wiki/Evolution "Evolution")) and [neuroscience](https://en.wikipedia.org/wiki/Neuroscience "Neuroscience") (the problem of [consciousness](https://en.wikipedia.org/wiki/Consciousness "Consciousness") and the study of the mind).
+- history of the Entscheidungsproblem and its subseqent 
 
 
 
