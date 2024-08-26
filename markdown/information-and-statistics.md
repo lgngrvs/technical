@@ -293,6 +293,7 @@ To talk about information involved in computation, instead of information genera
 AIT mostly studies strings — how to measure their complexity, and what to do with those measures. This is nice because lots of math can be described in terms of strings; it gives us extra perspective on this math, I guess. (As of writing this, I don't really have a good intuition for what this actually means.)
 
 I'm drawing here from three main sources: 
+
 - Wikipedia ([Algorithmic Information Theory](https://en.wikipedia.org/wiki/Algorithmic_information_theory) and [Kolmogorov Complexity](https://en.wikipedia.org/wiki/Kolmogorov_complexity))
 - *Kolmogorov Complexity and Algorithmic Randomness* by Shen, Uspensky, and Vereshchagin (ISBN 978-1-4704-7064-7)
 - And of course, LLMs for helping me orient myself and clarify the above.

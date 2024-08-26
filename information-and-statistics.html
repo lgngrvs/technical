@@ -284,11 +284,13 @@ $= 1.75 \: \text{bits}$</p>
 <p>According to Gregory Chaitin, it is "the result of putting Shannon's information theory and Turing's computability theory into a cocktail shaker and shaking vigorously."</p>
 </blockquote>
 <p>AIT mostly studies strings — how to measure their complexity, and what to do with those measures. This is nice because lots of math can be described in terms of strings; it gives us extra perspective on this math, I guess. (As of writing this, I don't really have a good intuition for what this actually means.)</p>
-<p>I'm drawing here from three main sources: 
-- Wikipedia (<a href="https://en.wikipedia.org/wiki/Algorithmic_information_theory">Algorithmic Information Theory</a> and <a href="https://en.wikipedia.org/wiki/Kolmogorov_complexity">Kolmogorov Complexity</a>)
-- <em>Kolmogorov Complexity and Algorithmic Randomness</em> by Shen, Uspensky, and Vereshchagin (ISBN 978-1-4704-7064-7)
-- And of course, LLMs for helping me orient myself and clarify the above.
-- <a href="https://www.lesswrong.com/posts/Kyc5dFDzBg4WccrbK/an-intuitive-explanation-of-solomonoff-induction">An Intuitive Explanation of Solomonoff Induction</a></p>
+<p>I'm drawing here from three main sources: </p>
+<ul>
+<li>Wikipedia (<a href="https://en.wikipedia.org/wiki/Algorithmic_information_theory">Algorithmic Information Theory</a> and <a href="https://en.wikipedia.org/wiki/Kolmogorov_complexity">Kolmogorov Complexity</a>)</li>
+<li><em>Kolmogorov Complexity and Algorithmic Randomness</em> by Shen, Uspensky, and Vereshchagin (ISBN 978-1-4704-7064-7)</li>
+<li>And of course, LLMs for helping me orient myself and clarify the above.</li>
+<li><a href="https://www.lesswrong.com/posts/Kyc5dFDzBg4WccrbK/an-intuitive-explanation-of-solomonoff-induction">An Intuitive Explanation of Solomonoff Induction</a></li>
+</ul>
 <p>The first notion to define is <strong>Kolmogorov Complexity</strong>, abbreviated below as <strong>K-complexity</strong>, and (from Wikipedia) "also known as algorithmic complexity, Solomonoff–Kolmogorov–Chaitin complexity, program-size complexity, descriptive complexity, or algorithmic entropy" along with the other 93 names of god. Heuristically or something, we should think that this is an important concept because it has so many names. Going into it, though, keep in mind one of its names: <em>algorithmic entropy</em>. The fact that this is another measure of entropy, a different way of looking at a similar fundamental idea, should maybe sit in the back of your mind as we proceed.</p>
 <p>I think the intuition of K-complexity is pretty simple. <strong>On a high level of abstraction, the K-complexity of a string is the length of the shortest program you could write to generate that string.</strong> You can also think of this as the K-complexity as being defined by "the shortest possible <em>description</em> of a string" in some formal sense; it's the same intuition. </p>
 <p>To formalize this, we'll introduce a couple ideas.</p>
