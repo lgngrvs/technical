@@ -415,10 +415,21 @@ Anyway, Turing proved that there's one specific Turing machine that can simulate
 
 Sound familiar? I think this is isomorphic, conceptually, to our optimal description mode we proved the existence of earlier. 
 
-**The Turing machine takes binary sequences as input, and leaves behind a different binary sequence as output.**
+The Turing machine takes binary sequences as input, and leaves behind a different binary sequence as output.
+
+If the notion of algorithms is formalized by Turing machines, and all Turing machines can be simulated by the universal Turing machine, then every algorithm can be simulated by the universal Turing machine. Any conversion from any string to any other string can be simulated by the universal Turing machine — in fact, that's *just what it's doing.*
+
+## Solomonoff induction
+
+What can we do with this fact? We kind systematically find truth about the world. You treat algorithms as hypotheses about the processes that govern the world. 
+
+One way a time-step physics simulation might work might be that it takes in (a) inputs of the states of the objects it's simulating and (b) the rules or algorithm that it should use to predict the next state, and then outputs a predicted "next state" of the world. 
 
 
 
+I'm feeling stuck here. 
+
+- solomonoff induction gives a universal prior for stuff based on this relationship with the complexity of the shortest hypothesis that generates it
 
 
 

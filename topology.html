@@ -1,0 +1,72 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>new life</title>
+            <link rel="stylesheet" href="site.css">
+            <link rel="stylesheet" href="theme.css">
+        </head>
+        <body>
+            <div id="wrapper">
+                <h2>Results from skimming a topology textbook</h2>
+<p>Experiment: Skimming a textbook, aiming for speed and definition. I don't care about doing practice problems. I want to eat the intuitions and the models and the formal ideas.</p>
+<p><em>I didn't actually do a very good job skimming, I just kind of messed around for maybe a couple hours — max two or something like that. It's fine, though — it was still fun and valuable.</em></p>
+<p>A <strong>topology</strong> for a set $X$ is a set $\tau$ of subsets of $X$ such that 
+1. the whole set $X$ and the empty set both belong to $\tau$
+2. any union of the sets in $\tau$ belongs to $\tau$
+3. any intersection of the sets in $\tau$ is in $\tau$</p>
+<p>We call it a <strong>topological space</strong> if we hold the pair together $(X, \tau)$. The members of $\tau$ are <strong>open sets</strong>.</p>
+<p>A subset is <strong>closed</strong> in the topology $(X, \tau)$ if $X \setminus S$ is open. The textbook says that this notation is derived from open and closed intervals; a subset is open if it's fully contained in the set, and closed if the a set of $X$ <em>except</em> it is in the set. A subset is <strong>clopen</strong> if it's both open and closed. (e.g. for $(X, \tau)$, $X$ and $\emptyset$ will always be clopen; they are complements)</p>
+<p><em>Seems like a strange definition and doesn't intuitively connect to geometry.</em></p>
+<p>Interesting: if you define $\tau_4$ as the set containing $\mathbb{N}$, $\emptyset$, and all finite subsets of $\mathbb{N}$, $\tau_4$ is <em>not</em> a subset of $\mathbb{N}$ because it doesn't contain all the <em>infinite</em> subsets of $\mathbb{N}$.</p>
+<p>We call it a <strong>discrete topology</strong> if $\tau$ is the collection of <em>all subsets</em> of $X$.</p>
+<p>We call it an <strong>indiscrete topology</strong> if $\tau$ is just ${X, \emptyset}$
+- Aye, it's still a topology — the only intersections and unions you can define are the set with the empty set.</p>
+<p><strong>Some notes on Sets and such:</strong></p>
+<ul>
+<li>A <em>proper subset</em> is one that is a subset of $X$ but is not $X$. ($A | A \subseteq X$ → $A \subset X$)</li>
+</ul>
+<p>skipping <em>finite-closed topology</em> and <em>inverse, inverse mapping</em></p>
+<p>The <strong>euclidean topology</strong> on the real numbers is pretty important, apparently. </p>
+<p>We call $S$ open in the <strong>euclidean topology</strong> on $\mathbb{R}$ if, for each member $x$ of $S$, there exists an interval $(a,b)$ (where $a&lt;B$) such that $x \in (a,b) \subseteq S$. For each member of a given subset, there's an interval which constitutes a subset of $S$ that contains it.</p>
+<p><em>I don't really get this right now. I can come back to it. The proof seems important.</em></p>
+<p>A collection $\mathcal{B}$ of open subsets of $X$ is the <strong>basis</strong> for the topological space $(X, \tau)$ if every open set is a union of members of $\mathcal{B}$.</p>
+<ul>
+<li>This is analogous to the idea of basis vectors in linear algebra, where each vector can be expressed as a combination of basis vectors; here each open set in $\tau$ can be expressed as a combination of the basis sets.</li>
+</ul>
+<p>$\mathcal{B}$ must have the following properties: </p>
+<ul>
+<li>$X = \bigcup_{B \in \mathcal{B}} B$ </li>
+<li>For any $B_1, B_2 \in \mathcal{B}$, $B_1 \cap B_2$ can be created by a union of members of $\mathcal{B}$</li>
+</ul>
+<p>Examples of bases</p>
+<ul>
+<li>$\mathcal{B} = {(a,b): a,b \in \mathbb{R}, a &lt; b}$. $\mathcal{B} is a basis for the euclidean topology on $\mathbb{R}$. (Trivially, because that's how you define the euclidean topology; this doesn't really seem interesting.)</li>
+<li>For some discrete space $(X, \tau)$, let's define $\mathcal{B}$ as the family of all singleton subsets of $X$, i.e. $\mathcal{B} = {{x}: x \in X}$. $\mathcal{B}$ is a basis for $\tau$. (this was proved earlier)</li>
+<li>Let $X = {a,b,c,d,e,f}$, and $$\tau_1 = {X, \emptyset, {a}, {c,d}, {a,c,d}, {b,c,d,e,f}}.$$ then $\mathcal{B} = {{a}, {c,d}, {b,c,d,e,f}}$ is a basis for $\tau_1$. $\tau_1$ is also a basis for $\tau_1$. </li>
+</ul>
+<p>There can be multiple bases for the same topology. If $\mathcal{B}$ is a basis for a topology on $X$, then a superset of $\mathcal{B}$ in $\tau$ will be a basis as well.</p>
+<p><img alt="planeeuclidean.png" src="planeeuclidean.png" /></p>
+<p>Now this starts to get us into geometry. You can generalize this to higher dimensions relatively easily. </p>
+<p>I don't understand this definition unfortunately. Where do the bounds on $a$, $b$, $c$, and $d$ come from?</p>
+<p>Anyway, you use limit points to define density. Limit points seem interesting.</p>
+<p>Then you get into neighborhoods — $N$ is a neighborhood of a point $p \in N$ if there's an open set $U$ such that $p \in U \subseteq N$. (doesn't make sense to me right now but that's fine; I just want to see where this textbook is going).</p>
+<p>Interesting vocabulary: topo space is <strong>connected</strong> if the only clopen subsets of $X$ are $X$ and $\emptyset$.</p>
+<p>Homeomorphism (p 96); any topological space homeomorphic to a connected space is connected. Function is continuous [epsilon-delta definition] → need to come up with different definitions that work for this</p>
+<ul>
+<li>a continuous mapping from one topological space onto another is continuous mapping if for each open set $U$ in the topological space on $Y$, there is an inverse image available in the space on $X$. </li>
+</ul>
+<p>Then you reconstruct the intermediate value theorem. A fixed point is a point such that after a continuous mapping of something onto itself the point maps onto itself. Some stuff about metric spaces. Redefinition of monotonic sequences. Contraction mappings. Mean value theorem. Okay, I ran out of steam around chapter 7.</p>
+<blockquote>
+<p>Topology has been used to study various biological systems including molecules and nanostructure (e.g., membraneous objects). In particular, <a href="https://en.wikipedia.org/wiki/Circuit_topology" title="Circuit topology">circuit topology</a> and <a href="https://en.wikipedia.org/wiki/Knot_theory" title="Knot theory">knot theory</a> have been extensively applied to classify and compare the topology of folded proteins and nucleic acids. <a href="https://en.wikipedia.org/wiki/Circuit_topology" title="Circuit topology">Circuit topology</a> classifies folded molecular chains based on the pairwise arrangement of their intra-chain contacts and chain crossings. <a href="https://en.wikipedia.org/wiki/Knot_theory" title="Knot theory">Knot theory</a>, a branch of topology, is used in biology to study the effects of certain enzymes on DNA. These enzymes cut, twist, and reconnect the DNA, causing knotting with observable effects such as slower <a href="https://en.wikipedia.org/wiki/Electrophoresis" title="Electrophoresis">electrophoresis</a>.<a href="https://en.wikipedia.org/wiki/Topology#cite_note-18">[18]</a></p>
+</blockquote>
+<p>Chapter 9: space filling curves! :D Look into works by people named Bernoulli, the name keeps coming up</p>
+            </div>
+            <script type="text/javascript" src="mathjax.js"></script>
+            <script type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+        </body>
+        </html>
+        

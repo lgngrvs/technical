@@ -372,9 +372,19 @@ $$D(Py)=P(y)$$ where $Py$ is just the program $P$ (a description mode used to ev
 <p>There are some cool things on the <a href="https://en.wikipedia.org/wiki/Hypercomputation">Hypercomputation</a> Wikipedia page, which I'd recommend checking out. Eventually I'd want to go down that rabbit hole, but for now I will leave that and return to Solomonoff and Kolmogorov.</p>
 <p>Anyway, Turing proved that there's one specific Turing machine that can simulate all other Turing machines: the "universal Turing machine." To make it simulate all the other machines, all you need to do is give it the <em>compiler</em> — funny that I didn't actually know this word before, but a compiler is a program that translates code between a source language and a target language, usually between a high-level language and a low-level language, but can be between any language — that translates between whatever machine the universal Turing machine is simulating, and the universal Turing machine itself. You just prepend it to the input — you give the universal Turing machine the compiler, then the input. </p>
 <p>Sound familiar? I think this is isomorphic, conceptually, to our optimal description mode we proved the existence of earlier. </p>
-<p><strong>The Turing machine takes binary sequences as input, and leaves behind a different binary sequence as output.</strong></p>
+<p>The Turing machine takes binary sequences as input, and leaves behind a different binary sequence as output.</p>
+<p>If the notion of algorithms is formalized by Turing machines, and all Turing machines can be simulated by the universal Turing machine, then every algorithm can be simulated by the universal Turing machine. Any conversion from any string to any other string can be simulated by the universal Turing machine — in fact, that's <em>just what it's doing.</em></p>
+<h2>Solomonoff induction</h2>
+<p>What can we do with this fact? We kind systematically find truth about the world. You treat algorithms as hypotheses about the processes that govern the world. </p>
+<p>One way a time-step physics simulation might work might be that it takes in (a) inputs of the states of the objects it's simulating and (b) the rules or algorithm that it should use to predict the next state, and then outputs a predicted "next state" of the world. </p>
+<p>I'm feeling stuck here. </p>
 <ul>
-<li>formal turing machines</li>
+<li>
+<p>solomonoff induction gives a universal prior for stuff based on this relationship with the complexity of the shortest hypothesis that generates it</p>
+</li>
+<li>
+<p>formal turing machines</p>
+</li>
 <li>how do turing machines actually work</li>
 <li>use the solmonoff induction post, then church-turing thesis, and then take the wikipedia definition and maybe some other things</li>
 <li>the halting problem</li>
