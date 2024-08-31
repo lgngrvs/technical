@@ -1,8 +1,10 @@
 from markdown import markdown
+from markdown.extensions.toc import TocExtension
+
 import os 
-import pygments
 import re
 
+import pygments
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
@@ -52,9 +54,11 @@ for file_name in list_of_file_names:
     file_path = f'{parent_directory}{file_name}'
     content = ""
 
+
     with open(file_path) as file: # opens the markdown file
         file_text = file.read()
-        content = markdown(file_text, extensions=["tables", "footnotes"])
+        content = markdown(file_text, extensions=["tables", "footnotes", TocExtension(title="Table of Contents", toc_depth="2-6", anchorlink="true")])
+	# permalink=True, permalink_leading=True
 
     # print(content)
 

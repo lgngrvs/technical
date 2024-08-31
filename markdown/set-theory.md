@@ -1,5 +1,6 @@
 # Set theory and foundations of math
 
+[TOC]
 
 ***The following section is from the archives (lol, February 2024, which as of writing was 6 months ago. Remarkable how much I've changed.)***
 

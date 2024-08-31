@@ -6,10 +6,9 @@ This isn't really a proper explainer, because I leave out most of the intuitions
 
 The code for this post is accessible [here](https://github.com/lgngrvs/technical/blob/main/py/transformer-basic.py).
 
-
-
-
 The transformer is the most interesting thing to me right now, so here's the goal. I'm going from high level to low level (using Claude for questions and debug), explaining the intuitions in this blog post as I go. I will build basic familiarity by doing the most basic task.
+
+[TOC]
 
 ### Code Part 1: Some easy parts
 

@@ -1,9 +1,12 @@
 # Formal models of decision-making
 
+
 *"Wouldn't it be cool to have systematic, predictable, accurate decision-making under uncertainty?"* said every systematizer ever. We have good and bad news. The good news is that lots of people want this, and they started making theories about it. The bad news is that this is really hard.
 
----
 
+[TOC]
+
+## Nash Equilibrium
 The **Nash Equilibrium** is the strategy for a game such that, holding the other players' strategies constant, there would be no incentive for the player to change strategy. *Hmm I actually don't properly get the details here*
 
 - For example, you and 20 people are playing a game where you pick a number between 0 and 100, such that your guess will be the closest guess to 2/3 times the mean of everyone's guesses. Normally this is kind of difficult -- you have to simulate everyone else in your head, then simulate them simulating you, then simulate them simulating you simulating them, et cetera, then guess what level the others are simulating you at, and then use that to pick a number $n$ for $(2/3)^n * 50$ -- but there's a strategy where everyone can win instead: *just pick 0*. 

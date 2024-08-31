@@ -1,4 +1,4 @@
-## Results from skimming a topology textbook
+# Results from skimming a topology textbook
 
 Experiment: Skimming a textbook, aiming for speed and definition. I don't care about doing practice problems. I want to eat the intuitions and the models and the formal ideas.
 

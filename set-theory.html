@@ -10,7 +10,16 @@
         </head>
         <body>
             <div id="wrapper">
-                <h1>Set theory and foundations of math</h1>
+                <h1 id="set-theory-and-foundations-of-math"><a class="toclink" href="#set-theory-and-foundations-of-math">Set theory and foundations of math</a></h1>
+<div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#set-theory-and-infinity">Set theory and infinity</a></li>
+<li><a href="#diagonalization">Diagonalization</a><ul>
+<li><a href="#godel-numbering">Gödel numbering</a></li>
+<li><a href="#prove-the-diagonal-lemma">Prove the diagonal lemma</a></li>
+</ul>
+</li>
+</ul>
+</div>
 <p><strong><em>The following section is from the archives (lol, February 2024, which as of writing was 6 months ago. Remarkable how much I've changed.)</em></strong></p>
 <p>The goal of this original version was just to get comfortable with sets and the idea of sets, their notation, etc. — I didn't really know what I was doing when I got started, and I was (understandably, at the time) afraid of textbooks. What you're seeing for a number of paragraphs below is younger me's style, younger me's knowledge, etc.; this explains the departure in style, or something. (One thing I ran into was that I was using the wrong textbook, lol — perhaps this explains why I was afraid of the textbook)</p>
 <hr />
@@ -53,7 +62,7 @@ E.g. $A = \{1, 2, 3\}$, therefore $|A| = 3$</p>
 <p>To add a little bit of vocabulary, just on the side, <em>Equinumerosity</em> is what we call it when there's a bijection between two sets, or alternatively $|A|=|B|$ . (I <em>think</em> these are the same thing.)</p>
 <p>(You might also see the term Isomorphism being thrown around; I avoid that term here even though it's technically maybe usable because the same two sets can be labeled isomorphic or not isomorphic depending on what characteristics you're looking at. Isomorphic might imply some sort of ordering relation. e.g. <a href="https://www.youtube.com/watch?v=efTeurdX__A0">this video</a>)</p>
 <p>Let's talk now about how set theory works with infinities.</p>
-<h2>Set theory and infinity</h2>
+<h2 id="set-theory-and-infinity"><a class="toclink" href="#set-theory-and-infinity">Set theory and infinity</a></h2>
 <p>One of the cool things that set theory lets us do is talk about different kinds of infinity. But to talk about infinity, we need a bit of vocabulary about number systems and infinity.</p>
 <p>First, a quick review of important sets: </p>
 <p>The natural numbers, $\mathbb{N}$, are the numbers that we count with "naturally" — they're basically the most basic idea of numbers. You can list them out in order: $\mathbb{N} = \{1, 2, 3, 4, 5 ...\}$</p>
@@ -359,7 +368,7 @@ E.g. $A = \{1, 2, 3\}$, therefore $|A| = 3$</p>
 <p>It no longer really makes sense to visualize past this, but we can go to $\omega^{\omega^{\omega^\omega...}}$ , applying this operation infinitely. Past that we hit $\epsilon_0$.  </p>
 <hr />
 <p><strong><em>Here ends the original passages of these notes from February 2024. I'm continuing on now from where I left off, ish, but mostly focusing on what is interesting.</em></strong></p>
-<h2>Diagonalization</h2>
+<h2 id="diagonalization"><a class="toclink" href="#diagonalization">Diagonalization</a></h2>
 <p>The diagonal lemma establishes self-referential sentences that you can use to prove Godel and Tarski's theorems. Huh?</p>
 <ul>
 <li>in theories that are strong enough to represent all computable functions<ul>
@@ -393,13 +402,13 @@ An "interpretation" or "model" of a formula specifies what all of it means — r
 <p>This sentence is asking, "Does $\mathcal{G}_f$ accurately capture the behavior of $f$ in the way that we would expect a graph function to?" It's important because we're taking a function $f$ from outside this theory $T$ — $f$ operates on actual numbers, whereas $T$ can only operate on the representations — and bringing it in using a graph formula. </p>
 <p>I don't really understand this very well. I think I'm confused about the whole idea of what's going on here — why does it matter that we can capture the behavior of some outside function? I'll hold that question and see if it gets answered as I continue reading. For now, I'll leave it as "We need this way of bringing outside functions into our first-order theory for now."</p>
 <p>We also need a way of assigning <strong>Gödel numberings</strong> to our formulas as labels.</p>
-<h3>Gödel numbering</h3>
+<h3 id="godel-numbering"><a class="toclink" href="#godel-numbering">Gödel numbering</a></h3>
 <p>A simple way to do this would be quite reminiscent of when we were talking about binary encodings. We could use ASCII, even — represent our functions in ASCII with (to take Wikipedia's example) <code>x=y =&gt; y=x</code> represented as <code>120 061 121 032 061 062 032 121 061 120</code>. You could concatenate them and there's a unique integer.</p>
 <p>Gödel didn't do it like this, cause it limits your vocabulary to however large your coding range (for ASCII, 127 distinct characters). There's a nicer way to do this that has an <em>infinite</em> vocabulary size — it can incorporate as many distinct symbols as you'd like! The cheat code: there are infinite primes. You can assign a prime number to each symbol you want to represent, and then create a coding based on that. </p>
 <p>Why not just append these prime numbers and call that the Gödel number? Well, you could, but it wouldn't be guaranteed to be unique. For example, if you had a symbol corresponding to <code>13</code> and a different one corresponding to <code>1</code>, as well as one corresponding to <code>131</code> (which you likely would, since 131 is a relatively small prime) you wouldn't be able to tell the difference between <code>131</code> ($\text{append}(13, 1)$) and <code>131</code> (the symbol corresponding to the prime number 131) when decoding. You could add spaces to your encoding, but that would just be un-elegant and lame and <em>wouldn't actually be a unique number, it would be some weird thing with spaces in it that isn't a number.</em> (You could replaces the spaces with 9s or something maybe, but even that might not be guaranteed to be unique. Also it would be lame and un-elegant.) </p>
 <p>What Gödel did instead was assign each position in the sequence a corresponding prime number (greater than two), and then <em>raised them</em> to the power of the symbol in that position — so it would look like $$2^{x_1} \times 3^{x_2} \times 5^{x_3} ...$$<img alt="" src="godelcoding.png" />This works because a number's prime factorization will always be unique, and the power of each prime will always be recoverable. There are other more sophisticated ways to do this but Gödel's original technique seems to be good enough to cover the idea.</p>
 <p>Now, returning to the sentence we discussed earlier with this in mind. We can assign every formula a natural number this way; we can call it a function $\#$ that maps formulas onto numbers or something. The notation we can use for this is assigning formula $\mathcal{A}$ a natural number $\#(\mathcal{A})$. Within $T$, these assignments will be $^\circ \#(\mathcal{A})$ (since they're the numerals corresponding to that number).</p>
-<h3>Prove the diagonal lemma</h3>
+<h3 id="prove-the-diagonal-lemma"><a class="toclink" href="#prove-the-diagonal-lemma">Prove the diagonal lemma</a></h3>
 <p><em>This is actually something I'm not prepared to do yet!</em> I spent about two and a half hours trying to grok the proof of the diagonal lemma today, and while I think I made some intuitional advances, there are too many underlying conceptual gaps that I'm missing to be able to do this at this point. I don't currently have enough experience with first-order logic to feel comfortable speaking its language; there are too many things that I don't currently understand for this to be successful. Some gaps in my knowledge I'm hitting: </p>
 <ul>
 <li><em>Difference between predicates and functions</em> — I think I have some sense of this but it's weak and doesn't have enough concrete practice. I think just general comfort with first-order logic and formal evaluation is an issue; I have some comfort with propositional logic but it hasn't translated well. (This is the type of thing that I think college courses and textbooks do well.)</li>

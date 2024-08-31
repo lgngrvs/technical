@@ -10,9 +10,20 @@
         </head>
         <body>
             <div id="wrapper">
-                <h1>Formal models of decision-making</h1>
+                <h1 id="formal-models-of-decision-making"><a class="toclink" href="#formal-models-of-decision-making">Formal models of decision-making</a></h1>
 <p><em>"Wouldn't it be cool to have systematic, predictable, accurate decision-making under uncertainty?"</em> said every systematizer ever. We have good and bad news. The good news is that lots of people want this, and they started making theories about it. The bad news is that this is really hard.</p>
-<hr />
+<div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#nash-equilibrium">Nash Equilibrium</a></li>
+<li><a href="#decision-theories">Decision theories</a><ul>
+<li><a href="#evidential-decision-theory">Evidential Decision Theory</a></li>
+</ul>
+</li>
+<li><a href="#where-cdt-wins-the-smoking-lesion-problem">Where CDT wins: the smoking lesion problem</a></li>
+<li><a href="#game-theory-with-computers">Game theory with computers</a></li>
+<li><a href="#predictive-processing-and-active-inference">predictive processing and active inference</a></li>
+</ul>
+</div>
+<h2 id="nash-equilibrium"><a class="toclink" href="#nash-equilibrium">Nash Equilibrium</a></h2>
 <p>The <strong>Nash Equilibrium</strong> is the strategy for a game such that, holding the other players' strategies constant, there would be no incentive for the player to change strategy. <em>Hmm I actually don't properly get the details here</em></p>
 <ul>
 <li>
@@ -26,7 +37,7 @@
 <p>Can't we do better than this?</p>
 <p>Game theory is what we call modeling games like these as a whole: you're modeling multiple agents, looking at their interactions. Decision theories, on the other hand, are about modeling different formal algorithms for <em>individual</em> decisions.</p>
 <p>This is a bunch of notes on this and related topics.</p>
-<h2>Decision theories</h2>
+<h2 id="decision-theories"><a class="toclink" href="#decision-theories">Decision theories</a></h2>
 <p><em>This section is in progress.</em></p>
 <p>If you want to formalize reasoning and decision-making, make your own decision theory. It's fun! Try it at home!</p>
 <p>Sources: </p>
@@ -44,7 +55,7 @@
 <p>There are many thought experiments we might use for decision theory other than this one — to me decision theory feels like a process similar to ethics, where we try to systematize our intuitions about "what is right." (Decision theory does, as you might expect, seem to have lots of theoretical connections to ethics — for example, the hypothesis that "moral rules are just encoded decision-theoretic equilibria.")</p>
 <p>The rest of decision theory is kind of weird and different from CDT in order to try and account for the discrepancies between what we think is the right decision in various situations and what various theories describe. In reality, I don't know whether decision theorists actually want to provide a systematic account of human decision-making; human intuitions (regardless of the truth of the above hypothesis) did not evolve for complex nation-state negotiation, for example, and if we build superintelligent AI it... <em>probably</em> will make decisions that look more like decision-theoretic outcomes than human intuitions — so it will maybe be useful at least in those two senses (geopolitics and AI) when we're dealing with super-agents who can act more rationally than humans.</p>
 <p>We can group all these decision theories under the name <strong>Logical decision theories</strong>. I'll start with the original competitor (I guess), which is <strong>Evidential decision theory.</strong></p>
-<h3>Evidential Decision Theory</h3>
+<h3 id="evidential-decision-theory"><a class="toclink" href="#evidential-decision-theory">Evidential Decision Theory</a></h3>
 <p>To this point, I've been basically going for introduction and haven't done much formalization — which is funny considering the whole point of decision theories is to allow formalization of decision making.</p>
 <p>The reason that I did that is because I wanted to get you started with intuitions that CDT is "the default." If I showed you the formalization first, it would distract from that point.</p>
 <p>But now we need the formalizations in order to proceed with intuition-building — at least, I do, lol. Why? EDT is a very natural way of thinking about decision-making, but that's only visible in its formalization. Attempts at intuition-building definitions of EDT kind of suck, just due to its nature. For example: </p>
@@ -194,7 +205,7 @@ Now, let's calculate the expected value for each action:</p>
 </blockquote>
 <p>Still, CDT two-boxes and EDT one-boxes. EDT changes its decision when Omega is <em>only very slightly better than a random coin flip</em> — when Omega's accuracy percentage (modeled here as $x$) is 0.5005 and the expected value curves intersect.</p>
 <p><img alt="EDT-newcombs-distribution.png" src="EDT-newcombs-distribution.png" /></p>
-<h2>Where CDT wins: the smoking lesion problem</h2>
+<h2 id="where-cdt-wins-the-smoking-lesion-problem"><a class="toclink" href="#where-cdt-wins-the-smoking-lesion-problem">Where CDT wins: the smoking lesion problem</a></h2>
 <p>todo</p>
 <p>okay im bored</p>
 <p><strong>TODO</strong></p>
@@ -229,7 +240,7 @@ Now, let's calculate the expected value for each action:</p>
 . . .</p>
 <p>If we want to do better than Defect-Defect in the classic prisoner's dilemma -- where you're in two different rooms, you'll need <em>acausal trades</em>. Maybe. Maybe there are other ways to do this or something that aren't absurd, but this one's kind of interesting and fun.</p>
 <hr />
-<h2>Game theory with computers</h2>
+<h2 id="game-theory-with-computers"><a class="toclink" href="#game-theory-with-computers">Game theory with computers</a></h2>
 <p><em>This section is in progress.</em></p>
 <p>from <a href="http://arxiv.org/abs/1602.04184">Parametric Bounded Lob's Theorem and Robust Cooperation of Bounded Agents</a>
 earlier work: https://www.lesswrong.com/posts/iQWk5jYeDg5ACCmpx/robust-cooperation-in-the-prisoner-s-dilemma
@@ -255,7 +266,7 @@ https://www.lesswrong.com/posts/XkNXsi6bsxxFaL5FL/ai-cooperation-is-already-stud
 <p>Actually this is not the case. There's some interesting math around provability that shows us why, called <strong>Lob's theorem</strong>. Using Lob's theorem, we can create "robust cooperative program equilibria for computationally bounded agents" -- this means unexploitable agents in this computer-based prisoner's dilemma game.</p>
 <p>The statement "$\Box_{k} p$" means, "$p$ has a proof of $k$ or fewer characters."</p>
 <hr />
-<h2>predictive processing and active inference</h2>
+<h2 id="predictive-processing-and-active-inference"><a class="toclink" href="#predictive-processing-and-active-inference">predictive processing and active inference</a></h2>
 <div class="footnote">
 <hr />
 <ol>

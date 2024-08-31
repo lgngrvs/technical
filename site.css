@@ -56,3 +56,41 @@ pre {
 	box-shadow: 2px 5px 5px lightgray;
 
 }
+
+.toc {	
+	border-radius: 0.5em;
+	border: 0.5px solid black;
+	padding: 1ch; 
+
+}
+
+.toctitle {
+
+	text-align: center; 
+	display: block; 
+	margin: auto;
+}
+
+.toclink {
+	color: black;
+	text-decoration: none;
+}
+
+.toclink:hover {
+	text-decoration: underline;
+}
+
+.headerlink {
+	/*margin-left: -2ch;
+	margin-right: 0.75ch;
+	color: lightgray;
+
+	hiding these because I don't want to deal with mobile styling rn
+
+*/
+	display:none;
+}
+
+h1 > .headerlink {
+	display:none;
+}
