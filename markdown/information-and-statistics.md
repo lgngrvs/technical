@@ -1,6 +1,12 @@
-# Information theory
+# Information theory and statistics
 
 [TOC]
+
+If you're curious about the sources for this post, they are
+
+- Wikipedia (asking questions to LLMs about it)
+- Shannon's original information theory paper
+- An Introduction to Kolmogorov Complexity and Its Applications by Ming and Vitányi
 
 ## What actually is information lol 
 It's been described to me as, "information resolves uncertainty." I think the best way to get a sense for it is talking about surprisal with regards to a specific thing.
@@ -168,6 +174,8 @@ Until now, we've mostly talked about information as it relates to surprise, or e
 
 In particular, here I'm thinking about applying information theory to data transfer and compression. It's useful and interesting — though it is somewhat limited in its results, for reasons related to the assumptions of Shannon's coding theorem (in particular, that the sequence we're talking about was generated probabilistically, with each character coming from the same random variable defined by the same distribution) which I'll talk about more below. But I think this is a great starting point for lots of other interesting ideas I'd like to get to, like Kolmogorov complexity, and, surprisingly, diagonalization arguments like Gödel's incompleteness theorems.
 
+*(Note: this post was originally combined with the K-complexity and algorithmic information theory post. I split them apart because the k-complexity post naturally turned into theoretical computer science and I wanted to keep this one statistical. See the [k-complexity post](ait-k-complexity.html) if the above paragraph intrigued you.*
+
 ### Shannon's source coding theorem: probabilistic/unstructured information
 Let's say we have a probabilistic event, and we want to store a history of its occurrences. We can return to our scenario with Anansi for this.
 
@@ -276,9 +284,36 @@ Now, the formalization and proof of this theorem requires a lot more concepts th
 
 #### Formalizing the source coding theorem
 
+
+
+
 *TODO: add formalization using mutual information, channel capacity, conditional entropy* (eventually this will cover everything in the wikipedia hopefully), Kraft inequality, gibbs inequality, etc.
 
 
+#### Joint entropy
+
+*Sourced from Wikipedia and (Ming and Vitanyi 2019)*
+
+What if you want the combined entropy of two distributions? If you take the joint probability of distributions $X$ and $Y$, i.e. look at the probability of any given combination of events $x \in X$ and $y \in Y$, the formula is intuitive; just sum over the joint probabilities times the joint information. 
+
+Joint probability for two *independent* variables (with discrete distributions) is easy: $$P(x,y) = P(x)\cdot P(y)$$ And the (discrete) joint entropy is therefore quite easy as well: $$H(X,Y) = \sum_{x, y} P(x,y) \cdot \log[\frac{1}{P(x,y)}]$$I was initially confused by the summation notation, given like this in the textbook. If you look on Wikipedia, turns out that's just a compact way to represent $$H(X,Y) = \sum_{x \in X} \sum_{y \in Y} P(x,y) \cdot \log[\frac{1}{P(x,y)}]$$If I looked at that with no context on joint probability I'd be like 😳, but actually, it's just a nested summation inside of another one. Like two `for` loops. There's a whole thing about continuous distributions that I don't feel like going into right now (it involves differential entropy which sucks afaik) so I'll leave joint entropy at this for now.
+
+*What if they're not independent?* Still not that deep. $$P(x,y) = P(x) \cdot P(y|x)$$Or $P(x,y) = P(x|y) \cdot P(y)$ of course. 
+
+You now object, "but you're just abstracting away all the difficulty! You need to explain how to calculate $P(y|x)$!" And to that I say, ugh, fine. There are tons of ways to do this. You can do it just using frequency data (Number of times $x$ and $y$ both happen divided by number of trials). You can do it using joint probability ($P(y|x) = P(x,y) / P(x)$) but that would be circular. You can do other statistical estimation methods, but there's one topic that I need to finally cover that has been haunting this post...
+
+(*Originally I had the section on Bayes' theorem here, but then I wanted to create a whole section for it. See the section [Bayes' theorem and variational bayesian inference](#bayes-theorem-and-variational-bayesian-inference).*)
+
+#### Mutual information
+Mutual information tells you how much information you get about variable $b$ by observing variable $a$. 
+ $$I(X;Y)=D_{\mathrm {KL} }(P_{(X,Y)}\|P_{X}\otimes P_{Y})$$
+The $D_{KL}$ part should be familiar — we just talked about KL divergence. $P_{(X,Y)}$ is the joint probability distribution of $X$ and $Y$ together. The $P_X \otimes P_Y$ part is mysterious.
+
+
+Mutual information is never negative. I'm getting two other definitions of mutual information, one from [Yudkowsky](https://www.lesswrong.com/posts/yLcuygFfMfrfK8KjF/mutual-information-and-density-in-thingspace), one from [lecture notes](https://www.ece.tufts.edu/ee/194NIT/lect01.pdf) I got from Tufts.
+
+Yudkowsky's formulation is as the difference in entropy between the two systems/distributions separately, and the two systems together: $$I(X;Y)=H(X)+H(Y)-H(X,Y)$$
+The tufts lecture gives mutual information as $$I(X;Y) = \sum_{x,y}P(x,y)\log\frac{P(x,y)}{P(x)\cdot P(y)}$$
 #### Why this coding theorem isn't enough
 
 There's a glaring weakness to this theorem's applicability, though: it can only talk about strings generated from probabilistic distributions! One of the key insights that I've taken away from learning about applications of information theory to computer science has been that **randomness is incompressibility.** We saw this above: a uniform distribution was *more random* than the unfair die that Anansi gave us; it had higher entropy. I think this insight points us further towards the limitations of Shannon's theorem.
@@ -287,6 +322,33 @@ There's a glaring weakness to this theorem's applicability, though: it can only 
 
  
  If we want to talk about the compressability, entropy, randomness, of logically-structured information, we need a [new vocabulary](/ait-k-complexity.html).
+
+## Bayes' theorem and variational Bayesian inference
+
+Fine! I'll talk about Bayes' theorem. Bayes' theorem won't help us much for calculating joint probability (since it relies on having information about $P(x|y)$ to calculate $P(y|x)$) but I need to talk about it anyway. I've spent this whole time talking about *updating* and *probabilities* and *beliefs* but haven't actually talked about how this all works.
+
+The formula is $$\text{Posterior}=\frac{\text{Likelihood}\times\text{Prior}}{\text{Evidence}}.$$ In formal language that is $$P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}.$$$P(A)$, the prior probability or just "prior," is how likely you think event $A$ is to happen initially. (I switched notation because more Bayes stuff is in $A$s and $B$s than $x$s and $y$s.) This is what I talked about earlier with the two paths where if you have no *information*, you have *perfect uncertainty,* you treat all outcomes as equally likely. If $A$ = "it has rained" and $B$ = "the grassy field outside is wet," our prior might be the proportion of days per year it rains on average. We might also have more information — for example, how often does it rain in August when we observe similar temperatures to the ones we had this week? Did the meteorologist say it was likely to rain yesterday?
+
+$P(B|A)$ is "how often does $B$ happen if we know $A$ has happened?" Often we have this information but we don't have $P(A|B)$. If $A$ = "it has rained" and $B$ = "the grassy field outside is wet," we know $P(B|A) \approx 99\%$ since only in very unlikely circumstances (such as "someone put a huge tarp over the whole field before it rained for some reason" or "someone dried the grass using 200 towels") but we don't always know what the probability is that it has rained given that the grass is wet, $P(A|B)$ — there might be a sprinkler system. There might be a water balloon fight. There might be a flood. 
+
+$P(B)$ is the probability of observing the evidence, just in general. ("What proportion of the days is the grass wet?").
+
+This is nice for individual events, but it's even better for probability distributions. You can use Bayes' rule to update your probability distributions!
+
+####  Using variational inference for ML — Loss functions are KL divergence ("KL Divergence is all you need")
+- cross entropy 
+- etc.
+
+
+this is so frustrating and i feel stuck here i want to do variational inference and then go to autoencoders
+
+
+```
+```These two we can show to be the same. 
+$H(X) = \sum_x P(x) \log\frac{1}{P(x)}$ and $H(X,Y) = \sum_{x,y}P(x,y)\log\frac{1}{P(x,y)}$. We can rewrite the whole formula as $$I(X;Y) = -\sum_x P(x) \log P(x)-\sum_y P(y) \log P(y) + \sum_{x,y}P(x,y)\log P(x,y)$$
+$$I(X;Y) = -\sum_x P(x) \log P(x)-\sum_y P(y) \log P(y) + \sum_{x,y}P(x,y)\log P(x,y)$$
+```
+####
 
 
 

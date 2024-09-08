@@ -1,0 +1,107 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>new life</title>
+            <link rel="stylesheet" href="site.css">
+            <link rel="stylesheet" href="theme.css">
+        </head>
+        <body>
+            <div id="wrapper">
+                <h1 id="sorting-algorithms"><a class="toclink" href="#sorting-algorithms">Sorting algorithms</a></h1>
+<p>You put lists in order. Sorting is pretty important. But how? There are lots of different ways to sort stuff and I want to learn about it. It's one of those problems that it hard to solve but simple to formulate.</p>
+<div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#early-sorting-algorithms">Early sorting algorithms</a><ul>
+<li><a href="#bubble-sort">Bubble sort</a></li>
+<li><a href="#selection-sort">Selection sort</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>There are various things that you care about. You care about memory usage, speed/computational complexity, among other things.</p>
+<h2 id="early-sorting-algorithms"><a class="toclink" href="#early-sorting-algorithms">Early sorting algorithms</a></h2>
+<p>There are lots of algorithms we can use, so I'll try and hit the main ones — the ones that are emblematic of some paradigm, and that are popular or were historically important from what I can tell</p>
+<h3 id="bubble-sort"><a class="toclink" href="#bubble-sort">Bubble sort</a></h3>
+<p>It's called bubble sort because items "bubble" up the list. You compare each pair of elements in a list, swapping them if they need to be swapped; then you go back through the list $n$ times until no more comparisons need to be done. </p>
+<div class="bw"><pre><span></span><span class="k">def</span> <span class="nf">bubble_sort_ascending</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span> 
+    <span class="k">assert</span> <span class="p">[</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">]</span>
+
+    <span class="nb">sorted</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">sort_pass</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span> 
+        <span class="k">global</span> <span class="n">num_swaps</span>
+        <span class="n">num_swaps</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># can&#39;t do global num_swaps = 0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">input</span><span class="p">)):</span> <span class="c1"># len(input) is not iterable</span>
+            <span class="k">try</span><span class="p">:</span> 
+                <span class="k">if</span> <span class="nb">input</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="nb">input</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="c1"># swap the two indices; this will work because </span>
+                    <span class="c1"># python evaluates the right side before executing the operation</span>
+                    <span class="nb">input</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">input</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">input</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="nb">input</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">num_swaps</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span> 
+                <span class="k">pass</span> <span class="c1"># ignores index error at the end of the list</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">num_swaps</span><span class="p">)</span>
+
+    <span class="n">sort_pass</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="n">num_swaps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
+        <span class="n">sort_pass</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+</pre></div>
+
+<p>Bubble sort is a comparison sort. I think it's in-place but I'm not sure. Bubble sort has $\mathcal{O}(n^2)$ comparisons in the worst case and average case, and in the best case  $\mathcal{O}(n)$ (where it only needs one pass, e.g. the list is already sorted).</p>
+<p>You can optimize this code to be much nicer than what I implemented here.</p>
+<p>When you run it on the list <code>[5,8,6,3,10,2,2,5]</code> you get </p>
+<div class="bw"><pre><span></span><span class="err">$</span> <span class="n">py3</span> <span class="n">sorting</span><span class="o">.</span><span class="n">py</span>
+<span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="mi">5</span>
+<span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="mi">4</span>
+<span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="mi">4</span>
+<span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="mi">2</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="mi">2</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span> <span class="mi">0</span>
+</pre></div>
+
+<p>(The number after each index is the number of swaps performed.)</p>
+<h3 id="selection-sort"><a class="toclink" href="#selection-sort">Selection sort</a></h3>
+<p>Selection sort iterates through a list, and for each element $e$ in the list looks through the rest of the array to see if there is an element smaller than it. If there is an element $s$ that is smaller, you swap $e$ and $s$. If there are multiple elements that are smaller, you swap $e$ with the minimum-sized $s$. You iterate through the list until you reach the end at which point all elements are sorted.</p>
+<div class="bw"><pre><span></span><span class="k">def</span> <span class="nf">selection_sort_ascending</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
+
+    <span class="k">assert</span> <span class="p">[</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;original: &quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i_e</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
+        <span class="nb">min</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="n">i_min</span> <span class="o">=</span> <span class="n">i_e</span>
+
+        <span class="k">for</span> <span class="n">i_s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_e</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">)):</span> 
+            <span class="k">if</span> <span class="nb">list</span><span class="p">[</span><span class="n">i_s</span><span class="p">]</span> <span class="o">&lt;</span> <span class="nb">min</span><span class="p">:</span> 
+                <span class="nb">min</span><span class="p">,</span> <span class="n">i_min</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="n">i_s</span><span class="p">],</span> <span class="n">i_s</span>
+
+        <span class="k">if</span> <span class="nb">min</span> <span class="o">!=</span> <span class="n">e</span><span class="p">:</span> 
+            <span class="nb">list</span><span class="p">[</span><span class="n">i_e</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">i_min</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="n">i_min</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">i_e</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+</pre></div>
+
+<p>When you run it on the list <code>[5,8,6,3,10,2,2,5]</code>,  you get</p>
+<div class="bw"><pre><span></span><span class="err">$</span> <span class="n">py3</span> <span class="n">sorting</span><span class="o">.</span><span class="n">py</span>
+<span class="n">original</span><span class="p">:</span>  <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+</pre></div>
+
+            </div>
+            <script type="text/javascript" src="mathjax.js"></script>
+            <script type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+        </body>
+        </html>
+        
